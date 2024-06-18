@@ -106,7 +106,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rummy_rs"
+name = "rummy"
 version = "0.1.0"
 dependencies = [
  "rand",

@@ -1,6 +1,6 @@
-extern crate rummy_rs;
+extern crate rummy;
 
-use game::{
+use rummy::game::{
     actions::{
         AllActions, DiscardActions, DrawActions, PlayActions, PlayableActions, RoundEndActions,
         TransitionResult,

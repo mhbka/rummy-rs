@@ -1,5 +1,5 @@
 [package]
-name = "rummy_rs"
+name = "rummy"
 version = "0.1.0"
 edition = "2021"
 repository = "https://github.com/mhbka/rummy-rs"
@@ -11,6 +11,8 @@ readme = "README.md"
 
 [dependencies]
 rand = { version = "0.8.5", features = ["std_rng"] }
-rprompt = "2.1.1"
 serde =  { version = "1.0.203", features = ["derive"] }
 strum = { version = "0.26.2", features = ["derive"] }
+
+[dev-dependencies]
+rprompt = "2.1.1"
