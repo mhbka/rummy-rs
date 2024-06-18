@@ -63,7 +63,7 @@ fn print_state<C, S: Score>(state: &State<C, S>) {
 
     for player in &state.players {
         println!("Player: {}", player.id());
-        for meld in &player.melds {
+        for meld in player.melds() {
             println!("{meld:?}");
         }
         println!("\n");
@@ -186,10 +186,10 @@ fn play_meld(
                 if i < 0 {
                     println!("Collecting...");
                     break;
-                } else if i as usize > cur_player.cards.len() {
+                } else if i as usize > cur_player.cards().len() {
                     println!("Greater than player's hand size. Try again.");
                 } else {
-                    println!("Chosen card: {:?}", cur_player.cards[i as usize]);
+                    println!("Chosen card: {:?}", cur_player.cards()[i as usize]);
                     indices.push(i as usize);
                 }
             }

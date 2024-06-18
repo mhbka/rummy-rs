@@ -12,18 +12,18 @@ use strum::IntoEnumIterator;
 /// - `high_rank`: Whether to override the highest rank (default being King)
 /// - `wildcard_rank`: Whether to have a wildcard rank (can also be Joker)
 #[derive(Clone, Default, Debug, PartialEq)]
-pub(crate) struct DeckConfig {
-    pub(crate) shuffle_seed: Option<u64>,
-    pub(crate) pack_count: usize,
-    pub(crate) high_rank: Option<Rank>,
-    pub(crate) wildcard_rank: Option<Rank>,
+pub struct DeckConfig {
+    pub shuffle_seed: Option<u64>,
+    pub pack_count: usize,
+    pub high_rank: Option<Rank>,
+    pub wildcard_rank: Option<Rank>,
 }
 
 impl DeckConfig {
     /// Creates a new `DeckConfig` with standard settings.
     /// 
     /// To customize, create the struct manually with the intended values.
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         DeckConfig {
             shuffle_seed: None,
             pack_count: 1,
@@ -52,7 +52,7 @@ impl Deck {
     /// - If `pack_count` < 1, it will be set to 1.
     /// - If `shuffle_seed` is `Some`, it will always be shuffled according to the seed.
     /// - If `wildcard_rank` is `Joker`, 2 jokers will be added per pack.
-    pub(crate) fn new(mut config: DeckConfig) -> Self {
+    pub fn new(mut config: DeckConfig) -> Self {
         config.pack_count = config.pack_count.max(1);
 
         let config = Rc::new(config);
@@ -73,7 +73,7 @@ impl Deck {
     ///
     /// **NOTE**: This refers to the current `DeckConfig`; if it has changed,
     /// the cards generated will be different from what was initially generated.
-    pub(crate) fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.stock.clear();
         self.discard_pile.clear();
         Deck::generate_cards(&mut self.stock, &self.config);
@@ -85,7 +85,7 @@ impl Deck {
     /// If `amount` is greater than the stock size, `Err` is returned.
     ///
     /// To replenish the stock, one can call `shuffle_discarded` or `turnover_discarded`.
-    pub(crate) fn draw(&mut self, amount: usize) -> Result<Vec<Card>, String> {
+    pub fn draw(&mut self, amount: usize) -> Result<Vec<Card>, String> {
         if amount > self.stock.len() {
             return Err(format!(
                 "Draw amount ({amount}) greater than stock size ({})",
@@ -102,7 +102,7 @@ impl Deck {
     /// If the card doesn't exist in the stock, return `Err`.
     ///
     /// If the deck is empty after drawing, shuffle the discarded cards back into it.
-    pub(crate) fn draw_specific(&mut self, rank: Rank, suit: Suit) -> Result<Card, String> {
+    pub fn draw_specific(&mut self, rank: Rank, suit: Suit) -> Result<Card, String> {
         for i in 0..self.stock.len() {
             let card = &self.stock[i];
             if card.rank == rank && card.suit == suit {
@@ -114,7 +114,7 @@ impl Deck {
     }
 
     /// See the top card of the discard pile, if there is one.
-    pub(crate) fn peek_discard_pile(&self) -> Option<(Rank, Suit)> {
+    pub fn peek_discard_pile(&self) -> Option<(Rank, Suit)> {
         self.discard_pile.last().map(|card| card.data())
     }
 
@@ -124,7 +124,7 @@ impl Deck {
     /// return `Err`.
     ///
     /// If `None` amount is specified, attempt to draw the entire discard pile.
-    pub(crate) fn draw_discard_pile(&mut self, amount: Option<usize>) -> Result<Vec<Card>, String> {
+    pub fn draw_discard_pile(&mut self, amount: Option<usize>) -> Result<Vec<Card>, String> {
         let discard_size = self.discard_pile.len();
         if discard_size == 0 {
             return Err(format!("Can't draw from empty discard pile"));
@@ -140,34 +140,34 @@ impl Deck {
     }
 
     /// Drains `cards` into the discard pile.
-    pub(crate) fn add_to_discard_pile(&mut self, cards: &mut Vec<Card>) {
+    pub fn add_to_discard_pile(&mut self, cards: &mut Vec<Card>) {
         self.discard_pile.append(cards);
     }
 
     /// Reset the stock by moving the discard pile into it and shuffling.
-    pub(crate) fn shuffle_discarded(&mut self) {
+    pub fn shuffle_discarded(&mut self) {
         self.stock.append(&mut self.discard_pile);
         self.stock.shuffle(&mut rand::thread_rng());
     }
 
     /// Reset the stock by moving the discard pile into it and turning it over.
-    pub(crate) fn turnover_discarded(&mut self) {
+    pub fn turnover_discarded(&mut self) {
         self.stock.append(&mut self.discard_pile);
         self.stock.reverse();
     }
 
     /// Get a reference to the deck configuration.
-    pub(crate) fn config(&self) -> &DeckConfig {
+    pub fn config(&self) -> &DeckConfig {
         &self.config
     }
 
     /// Get a reference to the deck stock.
-    pub(crate) fn stock(&self) -> &Vec<Card> {
+    pub fn stock(&self) -> &Vec<Card> {
         &self.stock
     }
 
     /// Get a reference to the deck discard pile.
-    pub(crate) fn discard_pile(&self) -> &Vec<Card> {
+    pub fn discard_pile(&self) -> &Vec<Card> {
         &self.discard_pile
     }
 

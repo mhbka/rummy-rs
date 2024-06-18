@@ -6,6 +6,8 @@ repository = "https://github.com/mhbka/rummy-rs"
 description = "a crate for the card game Rummy"
 license = "MIT"
 readme = "README.md"
+categories = ["game"]
+keywords = ["card", "game", "poker"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
