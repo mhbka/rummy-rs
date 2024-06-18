@@ -9,16 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "game"
-version = "0.1.0"
-dependencies = [
- "rand",
- "rprompt",
- "serde",
- "strum",
-]
-
-[[package]]
 name = "getrandom"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -113,6 +103,16 @@ checksum = "c247d24e63230cdb56463ae328478bd5eac8b8faa8c69461a77e8e323afac90e"
 dependencies = [
  "libc",
  "windows-sys",
+]
+
+[[package]]
+name = "rummy_rs"
+version = "0.1.0"
+dependencies = [
+ "rand",
+ "rprompt",
+ "serde",
+ "strum",
 ]
 
 [[package]]

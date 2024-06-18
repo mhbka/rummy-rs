@@ -1,6 +1,4 @@
-pub mod cards;
-pub mod game;
-pub mod player;
+extern crate rummy_rs;
 
 use game::{
     actions::{

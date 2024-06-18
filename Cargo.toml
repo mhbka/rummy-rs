@@ -1,7 +1,11 @@
 [package]
-name = "game"
+name = "rummy_rs"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/mhbka/rummy-rs"
+description = "a crate for the card game Rummy"
+license = "MIT"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
