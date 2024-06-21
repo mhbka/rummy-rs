@@ -95,23 +95,21 @@ impl PlayActions for StandardRummy<PlayPhase> {
             let mut meld = self.state.players[target_player_i]
                 .melds
                 .remove(target_meld_i); // move so i don't do &mut self simultaneously ...
+            let layoff_result = meld.layoff_card(&mut self.cur_player().cards, card_i); // ... with here ...
+            self.state.players[target_player_i]// ... then i put it back here.
+                .melds
+                .insert(target_meld_i, meld); 
 
-            match meld.layoff_card(&mut self.cur_player().cards, card_i) {
-                // ... with here ...
+            match layoff_result {
                 Ok(_) => {
-                    self.state.players[target_player_i]
-                        .melds
-                        .insert(target_meld_i, meld); // ... then i put it back
-
-                    if self.cur_player().cards.len() == 0 {
-                        // if all cards are gone, this player has won
-                        return TransitionResult::End(StandardRummy {
+                    if self.cur_player().cards.len() == 0 { // if all cards are gone, this player has won
+                        return TransitionResult::End(StandardRummy { 
                             phase: RoundEndPhase {
                                 has_scored_round: false,
                             },
                             state: self.state,
                         });
-                    } else {
+                    } else { 
                         return TransitionResult::Next(self);
                     }
                 }

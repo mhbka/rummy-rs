@@ -220,17 +220,26 @@ fn replace_wildcard_layoff_run() {
         Card { rank: Rank::Three, suit: Suit::Clubs, deck_config: cfg.clone() },
         Card { rank: Rank::Joker, suit: Suit::Joker, deck_config: cfg.clone() }, // replace this with actual card
         Card { rank: Rank::Five, suit: Suit::Clubs, deck_config: cfg.clone() },
+        Card { rank: Rank::Joker, suit: Suit::Joker, deck_config: cfg.clone() }, // this too
     ];
-    let mut indices = vec![0, 1, 2, 3];
+    let mut indices = vec![0, 1, 2, 3, 4];
     let mut run = Run::new(&mut cards.clone(), &mut indices).unwrap();
-    let mut card = vec![Card { rank: Rank::Four, suit: Suit::Clubs, deck_config: cfg.clone() }];
+    let mut layoff_cards = vec![
+        Card { rank: Rank::Four, suit: Suit::Clubs, deck_config: cfg.clone() },
+        Card { rank: Rank::Six, suit: Suit::Clubs, deck_config: cfg.clone() }
+    ];
 
-    assert!(run.layoff_card(&mut card, 0).is_ok());
-    assert!(card == vec![ Card { rank: Rank::Joker, suit: Suit::Joker, deck_config: cfg.clone() }]);
+    assert!(run.layoff_card(&mut layoff_cards, 1).is_ok());
+    assert!(run.layoff_card(&mut layoff_cards, 0).is_ok());
+    assert!(layoff_cards == vec![ 
+        Card { rank: Rank::Joker, suit: Suit::Joker, deck_config: cfg.clone() },
+        Card { rank: Rank::Joker, suit: Suit::Joker, deck_config: cfg.clone() }
+    ]);
     assert!(run.cards() == &vec![
         Card { rank: Rank::Two, suit: Suit::Clubs, deck_config: cfg.clone() },
         Card { rank: Rank::Three, suit: Suit::Clubs, deck_config: cfg.clone() },
-        Card { rank: Rank::Four, suit: Suit::Clubs, deck_config: cfg.clone() }, // replace this with actual card
+        Card { rank: Rank::Four, suit: Suit::Clubs, deck_config: cfg.clone() },
         Card { rank: Rank::Five, suit: Suit::Clubs, deck_config: cfg.clone() },
+        Card { rank: Rank::Six, suit: Suit::Clubs, deck_config: cfg.clone() }
     ]);
 }

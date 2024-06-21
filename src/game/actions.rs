@@ -30,10 +30,9 @@ pub trait DrawActions {
     /// If the variant doesn't allow this, its implementation can just ignore `amount` and use a default value.
     fn draw_discard_pile(&mut self, amount: Option<usize>) -> Result<(), String>;
 
-    /// Transition to next state where the current player can make plays.
-    ///
-    /// **NOTE**: Ensure any required actions are taken by the time/during this call,
-    /// as it is infallible.
+    /// Transition to next state where the current player can make plays. 
+    /// 
+    /// Automatically calls `draw_stock` if it hasn't been called at this point.
     fn to_play_phase(self) -> Self::SelfInPlayPhase;
 }
 
