@@ -245,17 +245,9 @@ fn play_layoff(
 }
 
 fn sort_hand<P: GamePhase + PlayablePhase>(game: &mut StandardRummy<P>) {
-    match rprompt::prompt_reply("Choose player to sort hand for: ")
-        .unwrap()
-        .parse()
-    {
-        Ok(i) => match game.sort_hand(i) {
-            Ok(_) => println!("Sorted player {i}'s hand."),
-            Err(err) => println!("Error: {err}"),
-        },
-        Err(_) => {
-            println!("Invalid input.");
-        }
+    match game.sort_hand(game.view_state().cur_player) {
+        Ok(_) => println!("Sorted your hand."),
+        Err(err) => println!("Error: {err}"),
     }
 }
 

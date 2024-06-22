@@ -1,13 +1,13 @@
 # rummy
 This crate models the card game Rummy. It supports configuration and different popular variants (WIP).
 
-*NOTE*: this crate is in very early development; expect nothing to stay stable.
+**NOTE: this crate is in early development; expect nothing to stay stable.**
 
 ## Use
 
 ### Modules
 A typical import of this crate will look like this:
-```Rust
+```rust 
 use rummy::game::{
     actions::{
         AllActions, DiscardActions, DrawActions, PlayActions, PlayableActions, RoundEndActions,
@@ -26,7 +26,7 @@ A breakdown of the modules:
 - **variants**: The game itself; contains different variants of Rummy.
 
 ### Starting a game
-```Rust
+```rust
 // initialize a list of player IDs
 let player_ids = vec![1, 2, 3, 4];
 
@@ -38,7 +38,7 @@ let game = game.to_next_round();
 ```
 
 Alternatively, you can configure the game by setting a config:
-```Rust
+```rust
 // the config struct for standard Rummy
 let game_config = StandardRummyConfig { /* ... */ };
 
