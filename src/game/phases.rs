@@ -1,5 +1,5 @@
 /// Trait indicating a game phase.
-pub trait GamePhase {}
+pub trait GamePhase: Send + Sync {}
 
 /// Trait indicating a phase where the game can still be played.
 pub trait PlayablePhase {}

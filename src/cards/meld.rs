@@ -7,7 +7,7 @@ pub trait Meldable {
     /// Attempt to create a new meld out of `Card`s and indices of the chosen cards.
     ///
     /// If valid, the indexed cards are removed and `Ok` is returned.
-    /// 
+    ///
     /// Else, `Err` is returned and `hand_cards` is left untouched.
     fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, String>
     where
@@ -16,7 +16,7 @@ pub trait Meldable {
     /// Attempt to add a card from `cards`, as chosen by `index`, to the meld.
     ///
     /// If valid, the card is moved from `cards` into the meld and `Ok` is returned.
-    /// 
+    ///
     /// If a wildcard in the meld can be replaced by the layoff card, they are swapped and `Ok` is returned.
     ///
     /// Else, `Err` is returned and `hand_cards` is left untouched.
@@ -36,10 +36,10 @@ pub enum Meld {
 impl Meld {
     /// Return if the meld is a set.
     pub fn is_set(&self) -> bool {
-        if let Meld::Set(_) = self { 
-            return true; 
+        if let Meld::Set(_) = self {
+            return true;
         }
-        false 
+        false
     }
 
     /// Return if the meld is a run.
@@ -113,7 +113,7 @@ impl Meldable for Set {
                         true
                     } else {
                         match non_wildcard_rank {
-                            Some(rank) =>  card.rank == rank,
+                            Some(rank) => card.rank == rank,
                             None => {
                                 non_wildcard_rank = Some(card.rank);
                                 true
@@ -140,12 +140,13 @@ impl Meldable for Set {
 
         // if we reach here, we have a valid set
         let cards: Vec<_> = cards // clone meld cards into a new vec...
-        .into_iter()
-        .cloned()
-        .collect();
+            .into_iter()
+            .cloned()
+            .collect();
 
         let mut idx = 0;
-        hand_cards.retain(|_| { // ... and remove them from the hand cards                        
+        hand_cards.retain(|_| {
+            // ... and remove them from the hand cards
             idx += 1;
             !indices.contains(&(idx - 1))
         });
@@ -165,11 +166,11 @@ impl Meldable for Set {
         if card.rank == self.set_rank {
             if let Some(wildcard) = self.cards.iter_mut().find(|c| c.is_wildcard()) {
                 std::mem::swap(wildcard, card);
-            } else { 
+            } else {
                 self.cards.push(hand_cards.remove(index));
             }
             return Ok(());
-        } 
+        }
         // else, if the layoff card is a wildcard, add it
         else if let Some(wildcard_rank) = card.deck_config.wildcard_rank {
             if card.rank == wildcard_rank {
@@ -235,7 +236,7 @@ impl Meldable for Run {
                 {
                     return Err(format!("Cards don't form a valid run"));
                 }
-            },
+            }
             Some(_) => {
                 // Check that each card has same suit and +1 rank from previous card (or previous card is wildcard).
                 // If not, try to insert a wildcard and continue.
@@ -243,11 +244,10 @@ impl Meldable for Run {
                 let mut i = 1;
                 let mut cards_len = cards.len();
                 while i < cards_len {
-                    if !cards[i - 1].same_suit_consecutive_rank(cards[i])
-                    {
-                        let wildcard = wildcards
-                            .pop()
-                            .ok_or("Cards don't form valid run (and not enough wildcards to fill gaps)")?;
+                    if !cards[i - 1].same_suit_consecutive_rank(cards[i]) {
+                        let wildcard = wildcards.pop().ok_or(
+                            "Cards don't form valid run (and not enough wildcards to fill gaps)",
+                        )?;
                         cards.insert(i, wildcard);
                         i += 1; // since we just added a card to `cards`...
                         cards_len += 1; // ... these 2 have to be incremented
@@ -258,15 +258,13 @@ impl Meldable for Run {
         };
 
         cards.append(&mut wildcards);
-        
+
         // reaching here = valid run, so clone out the meld cards...
-        let cards: Vec<_> = cards.iter() 
-            .map(|&&c| c)
-            .cloned()
-            .collect();
-        
+        let cards: Vec<_> = cards.iter().map(|&&c| c).cloned().collect();
+
         let mut idx = 0;
-        hand_cards.retain(|_| { // ...and remove them from the hand cards
+        hand_cards.retain(|_| {
+            // ...and remove them from the hand cards
             idx += 1;
             !indices.contains(&(idx - 1))
         });
@@ -281,39 +279,35 @@ impl Meldable for Run {
             .get(index)
             .ok_or("index is greater than hand_cards' size")?;
 
-        if let Some(wildcard_rank) = layoff_card.deck_config.wildcard_rank { 
+        if let Some(wildcard_rank) = layoff_card.deck_config.wildcard_rank {
             // if our card is a wildcard, its always valid to layoff
-            if layoff_card.rank == wildcard_rank { 
+            if layoff_card.rank == wildcard_rank {
                 self.cards.push(hand_cards.remove(index));
                 return Ok(());
             }
             // else, see if there are any wildcards that we could replace in the meld
-            else if let Some((wildcard_idx, _)) = self.cards 
-                .iter()
-                .enumerate()
-                .find(|&(i, _)| {
-                   self.cards[i].is_wildcard() // the current card is a wildcard...
+            else if let Some((wildcard_idx, _)) = self.cards.iter().enumerate().find(|&(i, _)| {
+                self.cards[i].is_wildcard() // the current card is a wildcard...
                    && ((i < self.cards.len()-1 && layoff_card.same_suit_consecutive_rank(&self.cards[i+1])) // ... the next card is compatible with layoff card...
                    || self.cards[i-1].same_suit_consecutive_rank(layoff_card) // ... or the wildcard is last card, and the previous card is compatible.
                    )
-                }) {
-                    let layoff_card = &mut hand_cards[index];
-                    let wildcard = &mut self.cards[wildcard_idx];
-                    std::mem::swap(wildcard, layoff_card); // swap our layoff card with the replaceable wildcard
-                    return Ok(());
-                }
+            }) {
+                let layoff_card = &mut hand_cards[index];
+                let wildcard = &mut self.cards[wildcard_idx];
+                std::mem::swap(wildcard, layoff_card); // swap our layoff card with the replaceable wildcard
+                return Ok(());
+            }
         }
         // see if card can be added at the bottom of the run...
-        if layoff_card.same_suit_consecutive_rank(&self.cards[0]) { 
+        if layoff_card.same_suit_consecutive_rank(&self.cards[0]) {
             self.cards.insert(0, hand_cards.remove(index));
             return Ok(());
         }
         // ...or at the top (the only 2 possible places)
-        else if self.cards[self.cards.len()-1].same_suit_consecutive_rank(layoff_card) { 
+        else if self.cards[self.cards.len() - 1].same_suit_consecutive_rank(layoff_card) {
             self.cards.push(hand_cards.remove(index));
             return Ok(());
-        }
-        else {
+        } else {
             Err("Card cannot be laid off in this run".into())
         }
     }

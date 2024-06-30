@@ -3,7 +3,7 @@ use crate::player::Player;
 use std::collections::HashMap;
 
 /// The state of a Rummy game, common across its variants.
-/// 
+///
 /// Takes a generic config `C` and score `S: Score`.
 pub struct State<C, S: Score> {
     pub config: C,

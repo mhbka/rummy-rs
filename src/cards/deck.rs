@@ -1,8 +1,8 @@
-use std::rc::Rc;
-
+use std::sync::Arc;
 use super::card::Card;
 use super::suit_rank::{Rank, Suit};
 use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
+use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
 /// Configurable parameters for a deck:
@@ -11,7 +11,7 @@ use strum::IntoEnumIterator;
 /// - `use_joker`: Whether to add Jokers and use them as wildcard (2 per pack)
 /// - `high_rank`: Whether to override the highest rank (default being King)
 /// - `wildcard_rank`: Whether to have a wildcard rank (can also be Joker)
-#[derive(Clone, Default, Debug, PartialEq)]
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct DeckConfig {
     pub shuffle_seed: Option<u64>,
     pub pack_count: usize,
@@ -21,7 +21,7 @@ pub struct DeckConfig {
 
 impl DeckConfig {
     /// Creates a new `DeckConfig` with standard settings.
-    /// 
+    ///
     /// To customize, create the struct manually with the intended values.
     pub fn new() -> Self {
         DeckConfig {
@@ -40,22 +40,23 @@ impl DeckConfig {
 /// - **discard pile**, discarded cards, which can also be drawn
 #[derive(Debug)]
 pub struct Deck {
-    config: Rc<DeckConfig>,
+    config: Arc<DeckConfig>,
     stock: Vec<Card>,
     discard_pile: Vec<Card>,
 }
 
 impl Deck {
-    /// Creates a new deck following settings in `config` and shuffles it.
+    /// Creates a new deck following the settings in `config` and shuffles it.
     ///
     /// **Note**:
     /// - If `pack_count` < 1, it will be set to 1.
     /// - If `shuffle_seed` is `Some`, it will always be shuffled according to the seed.
+    /// - If `shuffle_seed` is `None`, it will never be shuffled.
     /// - If `wildcard_rank` is `Joker`, 2 jokers will be added per pack.
     pub fn new(mut config: DeckConfig) -> Self {
         config.pack_count = config.pack_count.max(1);
 
-        let config = Rc::new(config);
+        let config = Arc::new(config);
 
         let mut deck = Deck {
             config: config.clone(),
@@ -172,7 +173,7 @@ impl Deck {
     }
 
     /// Generating cards into a `stock` based on `config`.
-    fn generate_cards(stock: &mut Vec<Card>, config: &Rc<DeckConfig>) {
+    fn generate_cards(stock: &mut Vec<Card>, config: &Arc<DeckConfig>) {
         for _ in 0..config.pack_count {
             for rank in Rank::iter() {
                 if rank == Rank::Joker {
@@ -191,7 +192,8 @@ impl Deck {
             }
 
             if config.wildcard_rank == Some(Rank::Joker) {
-                for _ in 0..2 { // 2 jokers per deck
+                for _ in 0..2 {
+                    // 2 jokers per deck
                     stock.push(Card {
                         rank: Rank::Joker,
                         suit: Suit::Joker,
@@ -203,13 +205,13 @@ impl Deck {
     }
 
     /// Shuffles cards in a `stock` based on `config`.
-    fn shuffle_cards(stock: &mut Vec<Card>, config: &Rc<DeckConfig>) {
+    fn shuffle_cards(stock: &mut Vec<Card>, config: &Arc<DeckConfig>) {
         match config.shuffle_seed {
             Some(seed) => {
                 if seed != 0 {
                     stock.shuffle(&mut StdRng::seed_from_u64(seed));
                 }
-            },
+            }
             None => stock.shuffle(&mut rand::thread_rng()),
         }
     }

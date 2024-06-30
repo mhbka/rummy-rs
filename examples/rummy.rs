@@ -1,5 +1,6 @@
 extern crate rummy;
 
+use rprompt;
 use rummy::game::{
     actions::{
         AllActions, DiscardActions, DrawActions, PlayActions, PlayableActions, RoundEndActions,
@@ -9,7 +10,6 @@ use rummy::game::{
     state::{Score, State},
     variants::standard::{StandardRummy, StandardRummyGame},
 };
-use rprompt;
 
 fn main() {
     let player_ids = vec![1, 2, 3, 4];
@@ -52,7 +52,11 @@ fn handle_round(mut game: StandardRummy<DrawPhase>) -> StandardRummy<RoundEndPha
 fn print_state<C, S: Score>(state: &State<C, S>) {
     println!("---------------");
     println!("Current player: {}", state.players[state.cur_player].id());
-    println!("Hand: {:?} ({} cards)", state.players[state.cur_player].cards(), state.players[state.cur_player].cards().len());
+    println!(
+        "Hand: {:?} ({} cards)",
+        state.players[state.cur_player].cards(),
+        state.players[state.cur_player].cards().len()
+    );
     println!("Deck size: {}", state.deck.stock().len());
     println!(
         "Top discard card and size: {:?}, {}",

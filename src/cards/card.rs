@@ -4,7 +4,10 @@ use super::{
 };
 use serde::{Deserialize, Serialize};
 use std::{
-    cmp::Ordering, fmt::{Debug, Display}, hash::Hash, rc::Rc
+    cmp::Ordering,
+    fmt::{Debug, Display},
+    hash::Hash,
+    sync::Arc,
 };
 
 /// A card.
@@ -15,9 +18,12 @@ pub struct Card {
     pub(crate) rank: Rank,
     pub(crate) suit: Suit,
 
+    // This is `Arc` so that the entire game is `Send + Sync`.
+    // A more performant alternative could be just immutable ref to the config,
+    // since it isn't meant to be mutated while a Card is alive.
+    // However it isn't nice to use since the lifetime ends up leaking everywhere.
     #[serde(skip_serializing, skip_deserializing)]
-    pub(crate) deck_config: Rc<DeckConfig>, // TODO: make this Option so we can default it to None for serde
-                                            // TODO: then figure out how to Rc to the deck upon deserializing
+    pub(crate) deck_config: Arc<DeckConfig>,
 }
 
 impl Card {
@@ -27,10 +33,10 @@ impl Card {
     }
 
     /// Obtain the "value" of a `Card`.
-    /// 
+    ///
     /// If the deck config has a custom `high_rank`, this function computes the correct value
     /// taking that into account.
-    /// 
+    ///
     /// The value is `4*(relative rank value) + (suit value)`.
     pub fn value(&self) -> u8 {
         if self.suit == Suit::Joker || self.rank == Rank::Joker {
@@ -40,8 +46,8 @@ impl Card {
         let max_rank = Rank::King as u8;
 
         let highest_rank = match self.deck_config.high_rank {
-           None => max_rank,
-           Some(high_rank) => high_rank as u8
+            None => max_rank,
+            Some(high_rank) => high_rank as u8,
         };
 
         let rank_offset = max_rank - highest_rank;
@@ -63,7 +69,7 @@ impl Card {
     /// - `high_rank = None`: (Two, Clubs) -> (Three, Clubs) = `true`
     /// - `high_rank = None`: (Two, Clubs) -> (Three, Spades) = `false`
     /// - `high_rank = Some(Two)`: (Two, Clubs) -> (Three, Clubs) = `false`
-    /// 
+    ///
     /// Mostly useful for validating runs.
     pub(crate) fn same_suit_consecutive_rank(&self, other: &Card) -> bool {
         self.value() + 4 == other.value()
@@ -72,7 +78,7 @@ impl Card {
     /// Returns whether the card is a `wildcard`, as determined by `deck_config`.
     pub(crate) fn is_wildcard(&self) -> bool {
         Some(self.rank) == self.deck_config.wildcard_rank
-    } 
+    }
 }
 
 /// Equality impls

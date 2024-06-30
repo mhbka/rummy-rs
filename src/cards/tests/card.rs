@@ -1,22 +1,33 @@
-#[cfg(test)]
-
-use std::rc::Rc;
 use super::super::deck::DeckConfig;
 use super::super::{
     card::Card,
-    suit_rank::{Suit, Rank}
+    suit_rank::{Rank, Suit},
 };
+#[cfg(test)]
+use std::sync::Arc;
 
 #[test]
 /// Cards have the expected ordering.
 fn normal_ordering_card() {
-    let cfg = Rc::new(DeckConfig::new());
+    let cfg = Arc::new(DeckConfig::new());
 
     // cards are ordered by rank, then suit
-    let card1 = Card { rank: Rank::Ace, suit: Suit::Clubs, deck_config: cfg.clone() };
-    let card2 = Card { rank: Rank::Ace, suit: Suit::Diamonds, deck_config: cfg.clone() };
-    let card3 = Card { rank: Rank::Two, suit: Suit::Clubs, deck_config: cfg.clone() };
-    
+    let card1 = Card {
+        rank: Rank::Ace,
+        suit: Suit::Clubs,
+        deck_config: cfg.clone(),
+    };
+    let card2 = Card {
+        rank: Rank::Ace,
+        suit: Suit::Diamonds,
+        deck_config: cfg.clone(),
+    };
+    let card3 = Card {
+        rank: Rank::Two,
+        suit: Suit::Clubs,
+        deck_config: cfg.clone(),
+    };
+
     assert!(card2 > card1);
     assert!(card3 > card2);
 }
@@ -24,10 +35,10 @@ fn normal_ordering_card() {
 #[test]
 /// If the deck config specifies a custom high rank,
 /// ordering will decrease from that rank onwards.
-/// 
-/// For eg, `high_rank = 3` means `3 > 2 > Ace > King > Queen > ...` 
+///
+/// For eg, `high_rank = 3` means `3 > 2 > Ace > King > Queen > ...`
 fn custom_ordering_card() {
-    let cfg = Rc::new(DeckConfig {
+    let cfg = Arc::new(DeckConfig {
         shuffle_seed: None,
         pack_count: 1,
         high_rank: Some(Rank::Three),
@@ -35,14 +46,30 @@ fn custom_ordering_card() {
     });
 
     // Rank::Three should be the highest now
-    let card1 = Card { rank: Rank::King, suit: Suit::Spades, deck_config: cfg.clone() };
-    let card2 = Card { rank: Rank::Two, suit: Suit::Spades, deck_config: cfg.clone() };
-    let card3 = Card { rank: Rank::Three, suit: Suit::Clubs, deck_config: cfg.clone() };
+    let card1 = Card {
+        rank: Rank::King,
+        suit: Suit::Spades,
+        deck_config: cfg.clone(),
+    };
+    let card2 = Card {
+        rank: Rank::Two,
+        suit: Suit::Spades,
+        deck_config: cfg.clone(),
+    };
+    let card3 = Card {
+        rank: Rank::Three,
+        suit: Suit::Clubs,
+        deck_config: cfg.clone(),
+    };
 
     assert!(card2 > card1);
     assert!(card3 > card2);
 
     // Suit ordering should remain the same
-    let card4 = Card { rank: Rank::Three, suit: Suit::Spades, deck_config: cfg.clone() };
+    let card4 = Card {
+        rank: Rank::Three,
+        suit: Suit::Spades,
+        deck_config: cfg.clone(),
+    };
     assert!(card4 > card1);
 }

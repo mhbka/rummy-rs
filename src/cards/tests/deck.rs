@@ -1,10 +1,9 @@
 #[cfg(test)]
-
 use crate::cards::suit_rank::Rank;
 use crate::cards::suit_rank::Suit;
 
-use super::super::deck::DeckConfig;
 use super::super::deck::Deck;
+use super::super::deck::DeckConfig;
 
 #[test]
 fn default_deck_config() {
@@ -18,7 +17,6 @@ fn default_deck_config() {
     let default_cfg = DeckConfig::new();
     assert_eq!(cfg, default_cfg);
 }
-
 
 #[test]
 fn normal_deck() {
@@ -68,10 +66,10 @@ fn no_shuffle_deck() {
     };
 
     let deck = Deck::new(cfg.clone());
-    assert!(deck.stock() // didn't shuffle, so cards should be in increasing order
+    assert!(deck
+        .stock() // didn't shuffle, so cards should be in increasing order
         .windows(2)
-        .all(|w| w[0] < w[1])
-    );
+        .all(|w| w[0] < w[1]));
 }
 
 #[test]
@@ -123,8 +121,8 @@ fn turnover_discarded_deck() {
 
     assert_eq!(deck.stock().len(), 52);
     assert_eq!(deck.discard_pile().len(), 0);
-    assert!(deck.stock() // ... since we didn't shuffle, we can verify turnover by increasing order of cards
+    assert!(deck
+        .stock() // ... since we didn't shuffle, we can verify turnover by increasing order of cards
         .windows(2)
-        .all(|w| w[0] > w[1])
-    );
+        .all(|w| w[0] > w[1]));
 }

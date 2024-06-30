@@ -1,9 +1,14 @@
 pub mod actions;
 pub mod state;
 
+use std::marker::PhantomData;
+
 use super::super::phases::*;
 use crate::{
-    cards::{deck::{Deck, DeckConfig}, suit_rank::Rank},
+    cards::{
+        deck::{Deck, DeckConfig},
+        suit_rank::Rank,
+    },
     player::Player,
 };
 use state::*;
@@ -95,3 +100,9 @@ impl<P: GamePhase> StandardRummy<P> {
         &self.state.config
     }
 }
+
+struct AssertSendSync<T: Send + Sync> {
+    _marker: PhantomData<T>,
+}
+
+impl<P: GamePhase> AssertSendSync<StandardRummy<P>> {}
