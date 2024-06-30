@@ -31,9 +31,9 @@ const fn get_cards_to_deal(num_players: usize, num_decks: usize) -> usize {
 }
 
 /// Entrypoint for starting a standard Rummy game.
-pub struct StandardRummyGame();
+pub struct StandardRummyBuilder();
 
-impl StandardRummyGame {
+impl StandardRummyBuilder {
     /// Start a new Rummy game with a list of `player_ids`, a game config, and a deck config.
     ///
     /// If there are >7 players, the excess will be truncated.
@@ -79,7 +79,7 @@ impl StandardRummyGame {
             wildcard_rank: Some(Rank::Joker),
         };
 
-        StandardRummyGame::new(player_ids, StandardRummyConfig::new(), deck_config)
+        StandardRummyBuilder::new(player_ids, StandardRummyConfig::new(), deck_config)
     }
 }
 
@@ -100,9 +100,3 @@ impl<P: GamePhase> StandardRummy<P> {
         &self.state.config
     }
 }
-
-struct AssertSendSync<T: Send + Sync> {
-    _marker: PhantomData<T>,
-}
-
-impl<P: GamePhase> AssertSendSync<StandardRummy<P>> {}
