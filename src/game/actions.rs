@@ -1,4 +1,4 @@
-use super::state::{Score, State};
+use super::state::{RummyScore, RummyState};
 
 /// A result for methods which may branch into different game phases:
 /// - `Next`: Transition to the intended next phase, `N`
@@ -124,9 +124,9 @@ pub trait GameEndActions {
 }
 
 /// Trait for actions during any phase.
-pub trait AllActions<C, S: Score> {
+pub trait AllActions<C, S: RummyScore> {
     /// View the game's state through an immutable reference.
-    fn view_state(&self) -> &State<C, S>;
+    fn view_state(&self) -> &RummyState<C, S>;
 }
 
 /// Trait for actions during any playable phase.

@@ -1,8 +1,6 @@
 pub mod actions;
 pub mod state;
 
-use std::marker::PhantomData;
-
 use super::super::phases::*;
 use crate::{
     cards::{

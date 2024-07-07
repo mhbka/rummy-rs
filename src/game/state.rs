@@ -5,7 +5,7 @@ use std::collections::HashMap;
 /// The state of a Rummy game, common across its variants.
 ///
 /// Takes a generic config `C` and score `S: Score`.
-pub struct State<C, S: Score> {
+pub struct RummyState<C, S: RummyScore> {
     pub config: C,
     pub score: S,
     pub deck: Deck,
@@ -15,7 +15,7 @@ pub struct State<C, S: Score> {
 }
 
 /// Very minimal trait for returning a hashmap representing each round's players' scores.
-pub trait Score {
+pub trait RummyScore {
     /// Returns an immutable reference to the score hashmap.
     fn get(&self) -> &HashMap<usize, HashMap<usize, usize>>;
 }

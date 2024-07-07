@@ -1,12 +1,12 @@
 use crate::{
     cards::suit_rank::Rank::*,
-    game::state::{Score, State},
+    game::state::{RummyScore, RummyState},
     player::Player,
 };
 use std::collections::HashMap;
 
 /// State for a standard Rummy game.
-pub type StandardRummyState = State<StandardRummyConfig, StandardRummyScore>;
+pub type StandardRummyState = RummyState<StandardRummyConfig, StandardRummyScore>;
 
 /// Keeps the score of a standard Rummy game.
 #[derive(Debug)]
@@ -14,7 +14,7 @@ pub struct StandardRummyScore {
     score: HashMap<usize, HashMap<usize, usize>>,
 }
 
-impl Score for StandardRummyScore {
+impl RummyScore for StandardRummyScore {
     fn get(&self) -> &HashMap<usize, HashMap<usize, usize>> {
         &self.score
     }
@@ -23,7 +23,7 @@ impl Score for StandardRummyScore {
 impl StandardRummyScore {
     /// Initialize a new score struct.
     pub(super) fn new() -> Self {
-        StandardRummyScore {
+        StandardRummyScore {    
             score: HashMap::new(),
         }
     }
