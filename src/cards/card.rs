@@ -10,26 +10,28 @@ use std::{
     sync::Arc,
 };
 
+/// The data of a card.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct CardData {
+    pub rank: Rank,
+    pub suit: Suit,
+}
+
 /// A card.
-///
-/// Always tied to a `Deck`.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct Card {
     pub(crate) rank: Rank,
     pub(crate) suit: Suit,
-
-    // This is `Arc` so that the entire game is `Send + Sync`.
-    // A more performant alternative could be just immutable ref to the config,
-    // since it isn't meant to be mutated while a Card is alive.
-    // However it isn't nice to use since the lifetime ends up leaking everywhere.
-    #[serde(skip_serializing, skip_deserializing)]
     pub(crate) deck_config: Arc<DeckConfig>,
 }
 
 impl Card {
-    /// Gets the card's rank and suit.
-    pub fn data(&self) -> (Rank, Suit) {
-        (self.rank, self.suit)
+    /// Get the card's rank and suit.
+    pub fn data(&self) -> CardData {
+        CardData { 
+            rank: self.rank, 
+            suit: self.suit 
+        }
     }
 
     /// Obtain the "value" of a `Card`.

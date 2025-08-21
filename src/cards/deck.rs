@@ -1,8 +1,10 @@
 use std::sync::Arc;
+use crate::cards::card::CardData;
+
 use super::card::Card;
 use super::suit_rank::{Rank, Suit};
 use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use strum::IntoEnumIterator;
 
 /// Configurable parameters for a deck:
@@ -33,12 +35,11 @@ impl DeckConfig {
     }
 }
 
-// TODO: verify cards belong to the deck before adding to discard pile
-
 /// The deck, consisting of the:
+/// - **config**, dictating shuffling, pack counts, wildcards etc.
 /// - **stock**, face-down cards that can be drawn at the start of each turn
 /// - **discard pile**, discarded cards, which can also be drawn
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Deck {
     config: Arc<DeckConfig>,
     stock: Vec<Card>,
@@ -51,7 +52,7 @@ impl Deck {
     /// **Note**:
     /// - If `pack_count` < 1, it will be set to 1.
     /// - If `shuffle_seed` is `Some`, it will always be shuffled according to the seed.
-    /// - If `shuffle_seed` is `None`, it will never be shuffled.
+    /// - If `shuffle_seed` is `None`, it will not be shuffled.
     /// - If `wildcard_rank` is `Joker`, 2 jokers will be added per pack.
     pub fn new(mut config: DeckConfig) -> Self {
         config.pack_count = config.pack_count.max(1);
@@ -98,24 +99,8 @@ impl Deck {
         Ok(cards)
     }
 
-    /// Draw a specific card from the deck stock.
-    ///
-    /// If the card doesn't exist in the stock, return `Err`.
-    ///
-    /// If the deck is empty after drawing, shuffle the discarded cards back into it.
-    pub fn draw_specific(&mut self, rank: Rank, suit: Suit) -> Result<Card, String> {
-        for i in 0..self.stock.len() {
-            let card = &self.stock[i];
-            if card.rank == rank && card.suit == suit {
-                return Ok(self.stock.remove(i));
-            }
-        }
-
-        Err(format!("No card ({suit:?}, {rank:?}) in the stock"))
-    }
-
     /// See the top card of the discard pile, if there is one.
-    pub fn peek_discard_pile(&self) -> Option<(Rank, Suit)> {
+    pub fn peek_discard_pile(&self) -> Option<CardData> {
         self.discard_pile.last().map(|card| card.data())
     }
 
@@ -214,5 +199,54 @@ impl Deck {
             }
             None => stock.shuffle(&mut rand::thread_rng()),
         }
+    }
+}
+
+/// Used solely for (de)serialization purposes.
+#[derive(Serialize, Deserialize)]
+struct SerializableDeck {
+    pub config: DeckConfig,
+    pub stock: Vec<CardData>,
+    pub discard_pile: Vec<CardData>,
+}
+
+// We serialize to `SerializableDeck`...
+impl Serialize for Deck {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let deck_data = SerializableDeck {
+            config: (*self.config).clone(), 
+            stock: self.stock.iter().map(|card| card.data()).collect(),
+            discard_pile: self.discard_pile.iter().map(|card| card.data()).collect(),
+        };
+        deck_data.serialize(serializer)
+    }
+}
+
+// And from it!
+impl<'de> Deserialize<'de> for Deck {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let deck_data = SerializableDeck::deserialize(deserializer)?;
+        let config = Arc::new(deck_data.config);
+        
+        let make_card = |card_data: CardData| Card {
+            rank: card_data.rank,
+            suit: card_data.suit,
+            deck_config: Arc::clone(&config),
+        };
+
+        let stock = deck_data.stock.into_iter().map(make_card).collect(); 
+        let discard_pile = deck_data.discard_pile.into_iter().map(make_card).collect();
+        
+        Ok(Deck {
+            config,
+            stock,
+            discard_pile,
+        })
     }
 }

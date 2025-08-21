@@ -1,7 +1,7 @@
 use super::cards::{card::Card, meld::Meld};
 
 /// A Rummy player.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Player {
     pub(crate) id: usize,
     pub(crate) cards: Vec<Card>,

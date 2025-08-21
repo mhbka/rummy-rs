@@ -1,15 +1,16 @@
+use thiserror::Error;
 use super::{
     card::Card,
     suit_rank::{Rank, Suit},
 };
 
+/// Represents behaviour of a meld.
 pub trait Meldable {
     /// Attempt to create a new meld out of `Card`s and indices of the chosen cards.
-    ///
     /// If valid, the indexed cards are removed and `Ok` is returned.
     ///
     /// Else, `Err` is returned and `hand_cards` is left untouched.
-    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, String>
+    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, MeldError>
     where
         Self: Sized;
 
@@ -20,14 +21,14 @@ pub trait Meldable {
     /// If a wildcard in the meld can be replaced by the layoff card, they are swapped and `Ok` is returned.
     ///
     /// Else, `Err` is returned and `hand_cards` is left untouched.
-    fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), String>;
+    fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), MeldError>;
 }
 
 /// A Rummy meld.
 /// There are 2 types:
-/// - **Set**; >=3 cards of same rank
-/// - **Run**; >=3 sequential cards of same suit
-#[derive(Debug)]
+/// - **Set**; >=3 cards of the same rank
+/// - **Run**; >=3 sequential cards of the same suit
+#[derive(Debug, Clone)]
 pub enum Meld {
     Set(Set),
     Run(Run),
@@ -49,7 +50,7 @@ impl Meld {
 }
 
 impl Meldable for Meld {
-    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, String>
+    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, MeldError>
     where
         Self: Sized,
     {
@@ -57,12 +58,12 @@ impl Meldable for Meld {
             Ok(set) => Ok(Meld::Set(set)),
             Err(set_err) => match Run::new(hand_cards, indices) {
                 Ok(run) => Ok(Meld::Run(run)),
-                Err(run_err) => Err(format!("Couldn't form set ({set_err}) or run ({run_err})")),
+                Err(_run_err) => Err(set_err), // Return the set error as primary
             },
         }
     }
 
-    fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), String> {
+    fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), MeldError> {
         match self {
             Meld::Set(set) => set.layoff_card(hand_cards, index),
             Meld::Run(run) => run.layoff_card(hand_cards, index),
@@ -71,7 +72,7 @@ impl Meldable for Meld {
 }
 
 /// A Rummy meld set.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Set {
     cards: Vec<Card>,
     set_rank: Rank,
@@ -90,9 +91,12 @@ impl Set {
 }
 
 impl Meldable for Set {
-    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, String> {
+    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, MeldError> {
         if indices.len() < 3 {
-            return Err(format!("Length of indices ({}) less than 3", indices.len()));
+            return Err(MeldError::InsufficientCards { 
+                provided: indices.len(), 
+                minimum: 3 
+            });
         }
 
         let cards = indices
@@ -100,9 +104,12 @@ impl Meldable for Set {
             .map(|&i| {
                 hand_cards
                     .get(i)
-                    .ok_or("index is greater than hand_cards size".to_string())
+                    .ok_or(MeldError::InvalidIndex { 
+                        index: i, 
+                        max_valid: hand_cards.len().saturating_sub(1) 
+                    })
             })
-            .collect::<Result<Vec<_>, _>>()?; // lmfao
+            .collect::<Result<Vec<_>, _>>()?;
 
         match cards[0].deck_config.wildcard_rank {
             // check if every card has same rank, or the wildcard rank
@@ -123,17 +130,17 @@ impl Meldable for Set {
                 }) {
                     // if set_rank is None, there is no none-wildcard, which isn't valid
                     if non_wildcard_rank.is_none() {
-                        return Err("A set cannot be formed out of only wildcards".into());
+                        return Err(MeldError::OnlyWildcards);
                     }
                 } else {
-                    return Err("Cards do not form a valid set".into());
+                    return Err(MeldError::InvalidSet);
                 }
             }
 
             // we check if every card has same rank
             None => {
                 if !cards.iter().all(|card| card.rank == cards[0].rank) {
-                    return Err("Cards do not form a valid set".into());
+                    return Err(MeldError::InvalidSet);
                 }
             }
         }
@@ -156,10 +163,11 @@ impl Meldable for Set {
         Ok(Set { cards, set_rank })
     }
 
-    fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), String> {
+    fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), MeldError> {
+        let max_valid = hand_cards.len().saturating_sub(1);
         let card = hand_cards
             .get_mut(index)
-            .ok_or("index is greater than hand_cards' size")?;
+            .ok_or(MeldError::InvalidIndex { index, max_valid })?;
 
         // if our card has the set's rank, swap with any wildcard in the meld first;
         // if there aren't any, then just push into the meld
@@ -179,12 +187,12 @@ impl Meldable for Set {
             }
         }
 
-        Err("Card cannot be laid off in this set".into())
+        Err(MeldError::InvalidLayoff { meld_type: "set" })
     }
 }
 
 /// A Rummy meld run.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Run {
     cards: Vec<Card>,
     set_suit: Suit,
@@ -203,21 +211,27 @@ impl Run {
 }
 
 impl Meldable for Run {
-    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, String> {
+    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, MeldError> {
         if indices.len() < 3 {
-            return Err(format!("Length of indices ({}) less than 3", indices.len()));
+            return Err(MeldError::InsufficientCards { 
+                provided: indices.len(), 
+                minimum: 3 
+            });
         }
+        
+        let deck_config = hand_cards[0].deck_config.clone();
 
         let cards = indices
             .iter()
             .map(|&idx| {
                 hand_cards
                     .get(idx)
-                    .ok_or("Index in indices is greater than cards' size")
+                    .ok_or(MeldError::InvalidIndex { 
+                        index: idx, 
+                        max_valid: hand_cards.len().saturating_sub(1) 
+                    })
             })
-            .collect::<Result<Vec<_>, _>>()?; // lmfao nice syntax
-
-        let deck_config = cards[0].deck_config.clone();
+            .collect::<Result<Vec<_>, _>>()?;
 
         let (mut cards, mut wildcards) = match deck_config.wildcard_rank {
             Some(wildcard_rank) => cards.iter().partition(|&c| c.rank != wildcard_rank),
@@ -234,7 +248,7 @@ impl Meldable for Run {
                     .windows(2)
                     .all(|w| w[0].same_suit_consecutive_rank(w[1]))
                 {
-                    return Err(format!("Cards don't form a valid run"));
+                    return Err(MeldError::InvalidRun);
                 }
             }
             Some(_) => {
@@ -245,9 +259,7 @@ impl Meldable for Run {
                 let mut cards_len = cards.len();
                 while i < cards_len {
                     if !cards[i - 1].same_suit_consecutive_rank(cards[i]) {
-                        let wildcard = wildcards.pop().ok_or(
-                            "Cards don't form valid run (and not enough wildcards to fill gaps)",
-                        )?;
+                        let wildcard = wildcards.pop().ok_or(MeldError::InsufficientWildcards)?;
                         cards.insert(i, wildcard);
                         i += 1; // since we just added a card to `cards`...
                         cards_len += 1; // ... these 2 have to be incremented
@@ -274,10 +286,13 @@ impl Meldable for Run {
         Ok(Run { cards, set_suit })
     }
 
-    fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), String> {
+    fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), MeldError> {
         let layoff_card = hand_cards
             .get(index)
-            .ok_or("index is greater than hand_cards' size")?;
+            .ok_or(MeldError::InvalidIndex { 
+                index, 
+                max_valid: hand_cards.len().saturating_sub(1) 
+            })?;
 
         if let Some(wildcard_rank) = layoff_card.deck_config.wildcard_rank {
             // if our card is a wildcard, its always valid to layoff
@@ -308,7 +323,26 @@ impl Meldable for Run {
             self.cards.push(hand_cards.remove(index));
             return Ok(());
         } else {
-            Err("Card cannot be laid off in this run".into())
+            Err(MeldError::InvalidLayoff { meld_type: "run" })
         }
     }
+}
+
+/// Potential errors from a meld.
+#[derive(Error, Debug, Clone, PartialEq)]
+pub enum MeldError {
+    #[error("Not enough cards provided: got {provided}, need at least {minimum}")]
+    InsufficientCards { provided: usize, minimum: usize },
+    #[error("Index {index} is out of bounds (max valid: {max_valid})")]
+    InvalidIndex { index: usize, max_valid: usize },
+    #[error("Cards do not form a valid set")]
+    InvalidSet,
+    #[error("Cards don't form a valid run")]
+    InvalidRun,
+    #[error("Cannot create a set from only wildcards")]
+    OnlyWildcards,
+    #[error("Card cannot be laid off in this {meld_type}")]
+    InvalidLayoff { meld_type: &'static str },
+    #[error("Cards don't form valid run (and not enough wildcards to fill gaps)")]
+    InsufficientWildcards,
 }

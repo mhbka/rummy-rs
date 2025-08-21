@@ -93,13 +93,6 @@ fn draw_and_discard_deck() {
 }
 
 #[test]
-fn draw_specific() {
-    let mut deck = Deck::new(DeckConfig::new());
-    assert!(deck.draw_specific(Rank::Ace, Suit::Clubs).is_ok());
-    assert!(deck.draw_specific(Rank::Ace, Suit::Clubs).is_err());
-}
-
-#[test]
 fn shuffle_discarded_deck() {
     let mut deck = Deck::new(DeckConfig::new());
     let mut cards = deck.draw(52).unwrap();
