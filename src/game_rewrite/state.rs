@@ -1,6 +1,4 @@
-use crate::{cards::deck::Deck, game_rewrite::{action::GameAction, game::{GameError, GameRules}}, player::Player};
-
-
+use crate::{cards::deck::Deck, game_rewrite::{action::GameAction, error::ActionError, game::GameRules}, player::Player};
 
 /// The state of the game. Includes state common across all variants like players,
 /// as well as `variant_data` for variant-specific information.
@@ -19,7 +17,7 @@ where
     R::VariantState: VariantState<R>
 {
     /// Validate if the action is valid in the current gamestate.
-    pub fn validate_action(&self, action: &GameAction) -> Result<(), GameError> {
+    pub fn validate_action(&self, action: &GameAction) -> Result<(), ActionError> {
         match (self.phase, action) {
             (GamePhase::Draw, GameAction::DrawDeck(_)) => Ok(()),
             (GamePhase::Draw, GameAction::DrawDiscardPile(_)) => Ok(()),
@@ -27,7 +25,7 @@ where
             (GamePhase::Play, GameAction::FormMelds(_)) => Ok(()),
             (GamePhase::Play, GameAction::LayOff(_)) => Ok(()),
             (GamePhase::Play, GameAction::Discard(_)) => Ok(()),
-            _ => Err(GameError::InvalidGamePhase { current_phase: self.phase }),
+            _ => Err(ActionError::InvalidGamePhase { current_phase: self.phase }),
         }?;
         R::VariantState::validate_action(self, action)
     }
@@ -43,7 +41,7 @@ pub trait VariantState<R: GameRules<VariantState = Self>>: Sized {
     /// ## Note
     /// This should not be used for validating specific actions (ie, if forming a meld is valid).
     /// That should be done in the `GameRules` action handler instead.
-    fn validate_action(state: &GameState<R>, action: &GameAction) -> Result<(), GameError> {
+    fn validate_action(state: &GameState<R>, action: &GameAction) -> Result<(), ActionError> {
         Ok(())
     }
 }
