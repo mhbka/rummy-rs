@@ -19,10 +19,10 @@ pub trait Game {
     /// Returns an `Err` if such player doesn't exist, or the game already ended.
     fn quit_player(&mut self, player_id: usize) -> Result<(), GameError>;
 
-    /// Add a player, returning their ID.
+    /// Add a player using the given `player_id`.
     /// 
     /// Returns an `Err` if the maximum number of players has been reached.
-    fn add_player(&mut self) -> Result<usize, GameError>;
+    fn add_player(&mut self, player_id: usize) -> Result<(), GameError>;
 
     /// Calculate and store round scores and start the next round.
     /// 
@@ -69,6 +69,12 @@ pub trait GameRules where Self: Sized {
     fn handle_discard(&mut self, state: &mut GameState<Self>, action: DiscardAction) -> Result<ActionOutcome, ActionError>;
 
     /// Calculate the score for a round. Returns an `Err` if the round hasn't ended.
-    fn calculate_round_score(&mut self, state: &mut GameState<Self>) -> Result<RoundScore<Self::VariantScore>, ActionError>;
+    fn calculate_round_score(&mut self, state: &GameState<Self>) -> Result<RoundScore<Self::VariantScore>, ActionError>;
+
+    /// The number of cards to deal each player.
+    fn cards_to_deal(&self, state: &GameState<Self>) -> usize;
+
+    /// The player index to start at for a new round.
+    fn starting_player_index(&self, state: &GameState<Self>) -> usize;
 }
 

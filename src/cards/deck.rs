@@ -72,9 +72,6 @@ impl Deck {
     }
 
     /// Reset the cards by creating a new deck and shuffling it.
-    ///
-    /// **NOTE**: This refers to the current `DeckConfig`; if it has changed,
-    /// the cards generated will be different from what was initially generated.
     pub fn reset(&mut self) {
         self.stock.clear();
         self.discard_pile.clear();
@@ -87,14 +84,33 @@ impl Deck {
     /// If `amount` is greater than the stock size, `Err` is returned.
     ///
     /// To replenish the stock, one can call `shuffle_discarded` or `turnover_discarded`.
-    pub fn draw(&mut self, amount: usize) -> Result<Vec<Card>, String> {
+    pub fn try_draw(&mut self, amount: usize) -> Result<Vec<Card>, String> {
         if amount > self.stock.len() {
             return Err(format!(
                 "Draw amount ({amount}) greater than stock size ({})",
                 self.stock.len()
             ));
         }
+        let cards = self.stock.split_off(self.stock.len() - amount);
+        Ok(cards)
+    }
 
+    /// Draw `amount` cards from the deck stock;
+    /// automatically turns over from the discard pile if there wasn't enough cards.
+    /// 
+    /// If `amount` is still greater than the stock size, `Err` is returned. 
+    /// 
+    /// ## Note
+    /// If this errors, it is probably a serious issue.
+    pub fn draw(&mut self, amount: usize) -> Result<Vec<Card>, String> {
+        if amount > self.stock.len() {
+            self.turnover_discarded();
+        }
+        if amount > self.stock.len() {
+            return Err(format!(
+                "Draw amount ({amount}) greater than stock + discard pile size (technically shouldn't happen)"
+            ))
+        }
         let cards = self.stock.split_off(self.stock.len() - amount);
         Ok(cards)
     }

@@ -39,18 +39,13 @@ pub struct DrawDiscardPileAction {
 pub struct LayOffAction {
     /// The index of the card in the current player's hand to lay off.
     pub card_index: usize,
-    /// The ID of the meld on the table to add the card to.
-    pub target_meld_id: usize,
-    /// For run melds, specifies where in the sequence to place the card.
-    pub position: Option<MeldPosition>,
-}
-
-#[derive(Debug, Clone)]
-pub enum MeldPosition {
-    Start,
-    End,
-    /// For variants that allow insertion at specific positions within a meld.
-    Index(usize),
+    /// The index of the user owning the targeted meld.
+    pub target_player_index: usize,
+    /// The index of the meld on the table to add the card to.
+    pub target_meld_index: usize,
+    /// The index within the meld to insert the card
+    /// (or, if that index contains a wildcard, replace it).
+    pub position: usize,
 }
 
 /// Represents forming a single meld.

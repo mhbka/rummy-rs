@@ -22,23 +22,27 @@ impl Player {
         }
     }
 
-    // Reference getters
+    /// Get the player's ID.
     pub fn id(&self) -> usize {
         self.id
     }
-
+    
+    /// Get the player's cards.
     pub fn cards(&self) -> &Vec<Card> {
         &self.cards
     }
 
+    /// Get the player's melds.
     pub fn melds(&self) -> &Vec<Meld> {
         &self.melds
     }
 
+    /// Whether the player is currently active.
     pub fn active(&self) -> bool {
         self.active
     }
 
+    /// Which round the player joined in.
     pub fn joined_in_round(&self) -> usize {
         self.joined_in_round
     }
