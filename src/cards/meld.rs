@@ -5,14 +5,17 @@ use super::{
 };
 
 /// Represents behaviour of a meld.
-pub trait Meldable {
-    /// Attempt to create a new meld out of `Card`s and indices of the chosen cards.
+pub trait Meldable: Sized {
+    /// Returns `Ok` if the cards in `hand_cards` indexed by `indices` form a valid meld.
+    /// 
+    /// If not, returns an `Err` with the reason.
+    fn valid(hand_cards: &Vec<Card>, indices: &[usize]) -> Result<(), MeldError>;
+
+    /// Attempt to create a new meld out of cards in `hand_cards` indexed by `indices`.
     /// If valid, the indexed cards are removed and `Ok` is returned.
     ///
     /// Else, `Err` is returned and `hand_cards` is left untouched.
-    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, MeldError>
-    where
-        Self: Sized;
+    fn new(hand_cards: &mut Vec<Card>, indices: &[usize]) -> Result<Self, MeldError>;
 
     /// Attempt to add a card from `cards`, as chosen by `index`, to the meld.
     ///
@@ -47,10 +50,62 @@ impl Meld {
     pub fn is_run(&self) -> bool {
         !self.is_set()
     }
+
+    /// Attempt to form multiple melds simultaneously in the order provided in `indices`,
+    /// returning all the formed melds if successful.
+    /// 
+    /// Returns with an error of `MeldError::MultipleMelds` at the first failure,
+    /// in which case `hand_cards` is not mutated.
+    pub fn multiple(hand_cards: &mut Vec<Card>, indices_of_melds: &Vec<Vec<usize>>) -> Result<Vec<Self>, MeldError> {
+        // Validate all card indices are unique
+        let mut all_indices: Vec<_> = indices_of_melds
+            .iter()
+            .flatten()
+            .collect();
+        let before_len = all_indices.len();
+        all_indices.sort();
+        all_indices.dedup();
+        let dedup_len = all_indices.len();
+        if before_len != dedup_len {
+            let err = Box::new(MeldError::OverlappingIndex);
+            return Err(
+                MeldError::FailedMultipleMelds { indices_index: 0, err }
+            );
+        }
+
+        // Validate that all meld indices form valid melds
+        for (i, indices) in indices_of_melds.iter().enumerate() {
+            if let Err(err) = Meld::valid(hand_cards, indices) {
+                let err = Box::new(err);
+                return Err(
+                    MeldError::FailedMultipleMelds { indices_index: i, err }
+                );
+            }
+        }
+
+        // Clone each meld's cards and create the melds
+        let melds = indices_of_melds
+            .iter()
+            .map(|indices| {
+                let mut meld_cards = indices
+                    .iter()
+                    .map(|&i| hand_cards[i].clone())
+                    .collect();
+                Meld::new(&mut meld_cards, &(0..indices.len()).collect::<Vec<_>>())
+            })
+            .collect::<Result<Vec<_>,_>>()?;
+
+        // Delete all meld cards from `hand_cards` in reverse order (so we don't run into indexing issues)
+        for &&i in all_indices.iter().rev() {
+            hand_cards.remove(i);
+        }
+
+        Ok(melds)
+    }
 }
 
 impl Meldable for Meld {
-    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, MeldError>
+    fn new(hand_cards: &mut Vec<Card>, indices: &[usize]) -> Result<Self, MeldError>
     where
         Self: Sized,
     {
@@ -58,7 +113,17 @@ impl Meldable for Meld {
             Ok(set) => Ok(Meld::Set(set)),
             Err(set_err) => match Run::new(hand_cards, indices) {
                 Ok(run) => Ok(Meld::Run(run)),
-                Err(_run_err) => Err(set_err), // Return the set error as primary
+                Err(_) => Err(set_err),
+            },
+        }
+    }
+
+    fn valid(hand_cards: &Vec<Card>, indices: &[usize]) -> Result<(), MeldError> {
+        match Set::valid(hand_cards, indices) {
+            Ok(_) => Ok(()),
+            Err(set_err) => match Run::valid(hand_cards, indices) {
+                Ok(_) => Ok(()),
+                Err(_) => Err(set_err), 
             },
         }
     }
@@ -91,14 +156,40 @@ impl Set {
 }
 
 impl Meldable for Set {
-    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, MeldError> {
+    fn new(hand_cards: &mut Vec<Card>, indices: &[usize]) -> Result<Self, MeldError> {
+        Self::valid(&hand_cards, indices)?;
+
+        let cards = indices
+            .iter()
+            .map(|&i| {
+                hand_cards
+                    .get(i)
+                    .cloned()
+                    // InvalidIndex shouldn't happen here since we already validated in `Self::valid`,
+                    // but defensive programming is always good
+                    .ok_or(MeldError::InvalidIndex { 
+                        index: i, 
+                        max_valid: hand_cards.len().saturating_sub(1) 
+                    })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let mut idx = 0;
+        hand_cards.retain(|_| {
+            idx += 1;
+            !indices.contains(&(idx - 1))
+        });
+        let set_rank = cards.iter().find(|c| !c.is_wildcard()).unwrap().rank;
+        Ok(Set { cards, set_rank })
+    }
+
+    fn valid(hand_cards: &Vec<Card>, indices: &[usize]) -> Result<(), MeldError> {
         if indices.len() < 3 {
             return Err(MeldError::InsufficientCards { 
                 provided: indices.len(), 
                 minimum: 3 
             });
         }
-
         let cards = indices
             .iter()
             .map(|&i| {
@@ -110,9 +201,8 @@ impl Meldable for Set {
                     })
             })
             .collect::<Result<Vec<_>, _>>()?;
-
         match cards[0].deck_config.wildcard_rank {
-            // check if every card has same rank, or the wildcard rank
+            // if there's a wildcard rank, check if every card has same rank or the wildcard rank
             Some(wildcard_rank) => {
                 let mut non_wildcard_rank = None;
                 if cards.iter().all(|card| {
@@ -124,11 +214,11 @@ impl Meldable for Set {
                             None => {
                                 non_wildcard_rank = Some(card.rank);
                                 true
-                            }
+                            } 
                         }
                     }
                 }) {
-                    // if set_rank is None, there is no none-wildcard, which isn't valid
+                    // if `non_wildcard_rank` is None, there is no non-wildcard, which isn't valid
                     if non_wildcard_rank.is_none() {
                         return Err(MeldError::OnlyWildcards);
                     }
@@ -136,8 +226,7 @@ impl Meldable for Set {
                     return Err(MeldError::InvalidSet);
                 }
             }
-
-            // we check if every card has same rank
+            // if not, we just check if every card has same rank
             None => {
                 if !cards.iter().all(|card| card.rank == cards[0].rank) {
                     return Err(MeldError::InvalidSet);
@@ -145,22 +234,7 @@ impl Meldable for Set {
             }
         }
 
-        // if we reach here, we have a valid set
-        let cards: Vec<_> = cards // clone meld cards into a new vec...
-            .into_iter()
-            .cloned()
-            .collect();
-
-        let mut idx = 0;
-        hand_cards.retain(|_| {
-            // ... and remove them from the hand cards
-            idx += 1;
-            !indices.contains(&(idx - 1))
-        });
-
-        let set_rank = cards.iter().find(|c| !c.is_wildcard()).unwrap().rank;
-
-        Ok(Set { cards, set_rank })
+        Ok(())
     }
 
     fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), MeldError> {
@@ -211,17 +285,45 @@ impl Run {
 }
 
 impl Meldable for Run {
-    fn new(hand_cards: &mut Vec<Card>, indices: &Vec<usize>) -> Result<Self, MeldError> {
+    fn new(hand_cards: &mut Vec<Card>, indices: &[usize]) -> Result<Self, MeldError> {
+        Self::valid(&hand_cards, indices)?;
+        
+        let cards = indices
+            .iter()
+            .map(|&idx| {
+                hand_cards
+                    .get(idx)
+                    .cloned()
+                    .ok_or(MeldError::InvalidIndex { 
+                        index: idx, 
+                        max_valid: hand_cards.len().saturating_sub(1) 
+                    })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let mut idx = 0;
+        hand_cards.retain(|_| {
+            idx += 1;
+            !indices.contains(&(idx - 1))
+        });
+
+        let set_suit = cards
+            .iter()
+            .find(|c| !c.is_wildcard())
+            .ok_or(MeldError::OnlyWildcards)? 
+            .suit;
+
+        Ok(Run { cards, set_suit })
+    }
+
+    fn valid(hand_cards: &Vec<Card>, indices: &[usize]) -> Result<(), MeldError> {
         if indices.len() < 3 {
             return Err(MeldError::InsufficientCards { 
                 provided: indices.len(), 
                 minimum: 3 
             });
         }
-        
-        let deck_config = hand_cards[0].deck_config.clone();
-
-        let cards = indices
+        let chosen_cards = indices
             .iter()
             .map(|&idx| {
                 hand_cards
@@ -232,35 +334,35 @@ impl Meldable for Run {
                     })
             })
             .collect::<Result<Vec<_>, _>>()?;
-
-        let (mut cards, mut wildcards) = match deck_config.wildcard_rank {
-            Some(wildcard_rank) => cards.iter().partition(|&c| c.rank != wildcard_rank),
-            None => (cards.iter().collect(), Vec::new()),
-        };
-
-        cards.sort();
+        
+        let deck_config = hand_cards[0].deck_config.clone();
 
         // Verify that cards (and wildcards) can form a run
         match deck_config.wildcard_rank {
             None => {
                 // No wildcard, so just check for same suit and consecutive (relative) rank
-                if !cards
+                if !chosen_cards
                     .windows(2)
                     .all(|w| w[0].same_suit_consecutive_rank(w[1]))
                 {
                     return Err(MeldError::InvalidRun);
                 }
             }
-            Some(_) => {
+            Some(wildcard_rank) => {
+                // First, split normal cards and wildcards
+                let (mut normal_cards, mut wildcards): (Vec<&Card>, Vec<&Card>) = chosen_cards
+                    .iter()
+                    .partition(|&c| c.rank != wildcard_rank);
+            
                 // Check that each card has same suit and +1 rank from previous card (or previous card is wildcard).
                 // If not, try to insert a wildcard and continue.
                 // If we have no wildcards left to insert, return Err.
                 let mut i = 1;
-                let mut cards_len = cards.len();
+                let mut cards_len = normal_cards.len();
                 while i < cards_len {
-                    if !cards[i - 1].same_suit_consecutive_rank(cards[i]) {
+                    if !normal_cards[i - 1].same_suit_consecutive_rank(normal_cards[i]) {
                         let wildcard = wildcards.pop().ok_or(MeldError::InsufficientWildcards)?;
-                        cards.insert(i, wildcard);
+                        normal_cards.insert(i, wildcard);
                         i += 1; // since we just added a card to `cards`...
                         cards_len += 1; // ... these 2 have to be incremented
                     }
@@ -269,21 +371,7 @@ impl Meldable for Run {
             }
         };
 
-        cards.append(&mut wildcards);
-
-        // reaching here = valid run, so clone out the meld cards...
-        let cards: Vec<_> = cards.iter().map(|&&c| c).cloned().collect();
-
-        let mut idx = 0;
-        hand_cards.retain(|_| {
-            // ...and remove them from the hand cards
-            idx += 1;
-            !indices.contains(&(idx - 1))
-        });
-
-        let set_suit = cards.iter().find(|c| !c.is_wildcard()).unwrap().suit;
-
-        Ok(Run { cards, set_suit })
+        Ok(())
     }
 
     fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), MeldError> {
@@ -335,6 +423,8 @@ pub enum MeldError {
     InsufficientCards { provided: usize, minimum: usize },
     #[error("Index {index} is out of bounds (max valid: {max_valid})")]
     InvalidIndex { index: usize, max_valid: usize },
+    #[error("At least 1 index in the indices are overlapping")]
+    OverlappingIndex,
     #[error("Cards do not form a valid set")]
     InvalidSet,
     #[error("Cards don't form a valid run")]
@@ -345,4 +435,6 @@ pub enum MeldError {
     InvalidLayoff { meld_type: &'static str },
     #[error("Cards don't form valid run (and not enough wildcards to fill gaps)")]
     InsufficientWildcards,
+    #[error("Failed to form multiple melds. Indices {indices_index} failed with error: {err}")]
+    FailedMultipleMelds { indices_index: usize, err: Box<MeldError> }
 }

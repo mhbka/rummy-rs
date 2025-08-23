@@ -19,17 +19,17 @@ where
     /// Validate if the action is valid in the current gamestate.
     pub fn validate_action(&self, action: &GameAction) -> Result<(), ActionError> {
         match (self.phase, action) {
-            (GamePhase::Draw, GameAction::DrawDeck(_)) => Ok(()),
-            (GamePhase::Draw, GameAction::DrawDiscardPile(_)) => Ok(()),
-            (GamePhase::Play, GameAction::FormMeld(_)) => Ok(()),
-            (GamePhase::Play, GameAction::FormMelds(_)) => Ok(()),
-            (GamePhase::Play, GameAction::LayOff(_)) => Ok(()),
-            (GamePhase::Play, GameAction::Discard(_)) => Ok(()),
+            (GamePhase::Draw, GameAction::DrawDeck(_)) => (),
+            (GamePhase::Draw, GameAction::DrawDiscardPile(_)) =>(),
+            (GamePhase::Play, GameAction::FormMeld(_)) => (),
+            (GamePhase::Play, GameAction::FormMelds(_)) => (),
+            (GamePhase::Play, GameAction::LayOff(_)) => (),
+            (GamePhase::Play, GameAction::Discard(_)) => (),
             _ => {
                 let err = FailedActionError::InvalidGamePhase { current_phase: self.phase };
                 return Err(ActionError::FailedAction(err));
             },
-        }?;
+        };
         R::VariantState::validate_action(self, action)
     }
 
@@ -45,7 +45,7 @@ where
             player.melds = Vec::new();
             player.cards = self.deck
                 .draw(cards_to_deal)
-                .map_err(|err| GameError::Internal(InternalError::NoCardsInDeckOrDiscardPile))?;
+                .map_err(|err| InternalError::NoCardsInDeckOrDiscardPile)?;
         }
         self.current_player = starting_player_index;
         self.phase = GamePhase::Draw;

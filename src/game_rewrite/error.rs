@@ -64,3 +64,9 @@ pub enum GameError {
     /// Some other internal error occurred.
     Internal(InternalError)
 }
+
+impl From<InternalError> for GameError {
+    fn from(value: InternalError) -> Self {
+        Self::Internal(value)
+    }
+}

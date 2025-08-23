@@ -67,12 +67,14 @@ impl Card {
         4 * relative_self_rank + self.suit as u8
     }
 
-    /// Whether or not `other` has the same suit and the consecutive (relative) rank. For eg:
+    /// Whether or not `other` has the same suit and the consecutive (relative) rank. 
+    /// 
+    /// ## Examples
     /// - `high_rank = None`: (Two, Clubs) -> (Three, Clubs) = `true`
     /// - `high_rank = None`: (Two, Clubs) -> (Three, Spades) = `false`
     /// - `high_rank = Some(Two)`: (Two, Clubs) -> (Three, Clubs) = `false`
     ///
-    /// Mostly useful for validating runs.
+    /// Useful for validating runs.
     pub(crate) fn same_suit_consecutive_rank(&self, other: &Card) -> bool {
         self.value() + 4 == other.value()
     }

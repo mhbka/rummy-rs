@@ -58,8 +58,8 @@ pub struct FormMeldAction {
 /// Represents forming multiple melds at once.
 #[derive(Debug, Clone)]
 pub struct FormMeldsAction {
-    /// The individual meld formations to execute simultaneously.
-    pub melds: Vec<FormMeldAction>,
+    /// The list of indices of cards to each form into a meld.
+    pub melds: Vec<Vec<usize>>,
 }
 
 /// Represents discarding a card.

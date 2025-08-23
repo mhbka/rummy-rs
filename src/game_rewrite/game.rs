@@ -62,7 +62,7 @@ pub trait GameRules where Self: Sized {
     /// Handle forming a single meld.
     fn handle_form_meld(&mut self, state: &mut GameState<Self>, action: FormMeldAction) -> Result<ActionOutcome, ActionError>;
 
-    /// Handle forming multiple melds at one time.
+    /// Handle forming multiple melds at one time. Either all melds successfully form, or none do.
     fn handle_form_melds(&mut self, state: &mut GameState<Self>, action: FormMeldsAction) -> Result<ActionOutcome, ActionError>;
 
     /// Handle discarding a card.
