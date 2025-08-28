@@ -61,6 +61,8 @@ pub enum GameError {
     AddedPlayerAlreadyExists,
     /// The game already has maximum number of players.
     MaxPlayersReached,
+    /// No winner was found for the round.
+    RoundHasNoWinner,
     /// Some other internal error occurred.
     Internal(InternalError)
 }

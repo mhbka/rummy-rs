@@ -67,6 +67,17 @@ impl Card {
         4 * relative_self_rank + self.suit as u8
     }
 
+    /// Returns the card's value in context of scoring, that is:
+    /// - Ace: 1
+    /// - 2 - 10: Face value
+    /// - Jack/Queen/King: 10
+    pub fn score_value(&self) -> u8 {
+        match self.rank {
+            Rank::Jack | Rank::Queen | Rank::King => 10,
+            other => other as u8
+        }
+    }
+
     /// Whether or not `other` has the same suit and the consecutive (relative) rank. 
     /// 
     /// ## Examples

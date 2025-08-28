@@ -10,7 +10,6 @@ use strum::IntoEnumIterator;
 /// Configurable parameters for a deck:
 /// - `shuffle_seed`: Optional seed for shuffling; `0` results in no shuffle
 /// - `pack_count`: Number of card packs to include in the deck
-/// - `use_joker`: Whether to add Jokers and use them as wildcard (2 per pack)
 /// - `high_rank`: Whether to override the highest rank (default being King)
 /// - `wildcard_rank`: Whether to have a wildcard rank (can also be Joker)
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
@@ -142,8 +141,13 @@ impl Deck {
     }
 
     /// Drains `cards` into the discard pile.
-    pub fn add_to_discard_pile(&mut self, cards: &mut Vec<Card>) {
+    pub fn add_multiple_to_discard_pile(&mut self, cards: &mut Vec<Card>) {
         self.discard_pile.append(cards);
+    }
+
+    /// Add a single card onto the discard pile.
+    pub fn add_to_discard_pile(&mut self, card: Card) {
+        self.discard_pile.push(card);
     }
 
     /// Reset the stock by moving the discard pile into it and shuffling.

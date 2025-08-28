@@ -75,7 +75,6 @@ pub struct DiscardAction {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ActionOutcome {
     Continue,
-    PlayerWentOut,
     RoundEnded,
     GameEnded,
 }

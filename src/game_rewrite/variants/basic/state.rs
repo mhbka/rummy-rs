@@ -3,4 +3,4 @@ use crate::game_rewrite::{state::VariantState, variants::basic::{rules::BasicRul
 /// Basic Rummy requires no additional state, so this is an empty struct.
 pub struct BasicState {}
 
-impl VariantState<BasicRules> for BasicState {}
+impl VariantState<BasicScore, BasicRules> for BasicState {}

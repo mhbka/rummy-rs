@@ -1,21 +1,53 @@
-use crate::{cards::deck::Deck, game_rewrite::{action::GameAction, error::{ActionError, FailedActionError, GameError, InternalError}, game::GameRules}, player::Player};
+use std::collections::HashMap;
+
+use crate::{cards::deck::{Deck, DeckConfig}, game_rewrite::{action::GameAction, error::{ActionError, FailedActionError, GameError, InternalError}, game::GameRules, score::{RoundScore, VariantPlayerScore}}, player::Player};
 
 /// The state of the game. Includes state common across all variants like players,
 /// as well as `variant_state` for variant-specific information.
+/// 
+/// ## Note
+/// Ensure that mutable references to this are not handed outside of the `Game`.
+/// Accidental wrong mutation of the state will probably lead to an invalid gamestate.
 #[derive(Debug, Clone)]
-pub struct GameState<R: GameRules> {
+pub struct GameState<P: VariantPlayerScore, R: GameRules<VariantScore = P>>   {
     pub phase: GamePhase,
     pub players: Vec<Player>,
     pub deck: Deck,
     pub current_player: usize,
     pub current_round: usize,
+    pub round_scores: HashMap<usize, RoundScore<P>>,
     pub variant_state: R::VariantState, 
-}
+} 
 
-impl<R: GameRules> GameState<R> 
+impl<P: VariantPlayerScore, R: GameRules<VariantScore = P>> GameState<P, R> 
 where
-    R::VariantState: VariantState<R>
+    R::VariantState: VariantState<P, R>
 {   
+    /// Initialize the game state.
+    pub fn initialize(player_ids: Vec<usize>, deck_config: DeckConfig, variant_state: R::VariantState) -> Self {
+        let players = player_ids
+            .into_iter()
+            .map(|id| Player {
+                id,
+                cards: vec![],
+                melds: vec![],
+                active: true,
+                joined_in_round: 0
+            })
+            .collect();
+        let deck = Deck::new(deck_config);
+        Self {
+            phase: GamePhase::RoundEnd,
+            players,
+            deck,
+            current_round: 0,
+            current_player: 0,
+            round_scores: HashMap::new(),
+            variant_state
+        }
+    } 
+
+
     /// Validate if the action is valid in the current gamestate.
     pub fn validate_action(&self, action: &GameAction) -> Result<(), ActionError> {
         match (self.phase, action) {
@@ -52,10 +84,31 @@ where
         self.current_round += 1;
         Ok(())
     }
+
+    /// If the game is still active (ie, not `RoundEnd` or `GameEnd`), handles going to the next phase. Else, does nothing.
+    pub fn next_active_phase(&mut self) {
+        self.phase = match self.phase {
+            GamePhase::Draw => GamePhase::Play,
+            GamePhase::Play => {
+                self.next_player();
+                GamePhase::Draw
+            },
+            other => other
+        };
+    }
+
+    /// Increment `current_player` to the next active player.
+    fn next_player(&mut self) {
+        let mut next_player = (self.current_player + 1) % self.players.len();
+        while !self.players[next_player].active {
+            next_player = (self.current_player + 1) % self.players.len();
+        }
+        self.current_player = next_player;
+    }
 }
 
 /// Represents the unique state held by a Rummy variant.
-pub trait VariantState<R: GameRules<VariantState = Self>>: Sized {
+pub trait VariantState<P: VariantPlayerScore, R: GameRules<VariantState = Self, VariantScore = P>>: Sized {
     /// Validate if an action is **generally** valid in the current gamestate, for the variant.
     /// 
     /// The default implementation is to just return `Ok(())`. If a variant requires its own validation
@@ -64,7 +117,7 @@ pub trait VariantState<R: GameRules<VariantState = Self>>: Sized {
     /// ## Note
     /// This should not be used for validating specific actions (ie, whether forming a meld is valid).
     /// That should be done in the `GameRules` action handler instead.
-    fn validate_action(state: &GameState<R>, action: &GameAction) -> Result<(), ActionError> {
+    fn validate_action(state: &GameState<P, R>, action: &GameAction) -> Result<(), ActionError> {
         Ok(())
     }
 }

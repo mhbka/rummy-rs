@@ -1,13 +1,25 @@
-use crate::{game_rewrite::{action::{ActionOutcome, GameAction}, error::{ActionError, GameError}, game::{Game, GameRules}, state::{GamePhase, GameState}, variants::basic::rules::BasicRules}, player::Player};
+use crate::{cards::deck::DeckConfig, game_rewrite::{action::{ActionOutcome, GameAction}, error::{ActionError, GameError}, game::{Game, GameRules}, state::{GamePhase, GameState}, variants::basic::{rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
 
 /// The basic/standard form of Rummy.
 pub struct BasicRummyGame {
-    state: GameState<BasicRules>,
+    state: GameState<BasicScore, BasicRules>,
     rules: BasicRules
 }
 
 impl BasicRummyGame {
-
+    /// Initialize the Rummy game.
+    pub fn new(player_ids: Vec<usize>, deck_config: DeckConfig) -> Self {
+        let state = GameState::initialize(
+            player_ids, 
+            deck_config, 
+            BasicState {}
+        );
+        let rules = BasicRules {};
+        Self {
+            state,
+            rules
+        }
+    }
 }
 
 impl Game for BasicRummyGame {
@@ -17,7 +29,7 @@ impl Game for BasicRummyGame {
         self.rules.execute_action(&mut self.state, action)
     }
 
-    fn get_state(&self) -> &GameState<Self::Rules> {
+    fn get_state(&self) -> &GameState<BasicScore, BasicRules> {
         &self.state
     }
 
@@ -59,7 +71,10 @@ impl Game for BasicRummyGame {
             return Err(GameError::RoundHasntEnded);
         }
 
-        
+        let round_score = self.rules.calculate_round_score(&self.state)?;
+        self.state.round_scores.insert(self.state.current_round, round_score);
+        self.state.current_round += 1;
+        self.state.current_player = self.rules.starting_player_index(&self.state);
 
         Ok(())
     }

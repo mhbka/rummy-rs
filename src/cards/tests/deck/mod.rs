@@ -78,13 +78,13 @@ fn draw_and_discard_deck() {
 
     // Drawing 1 card
     let mut card = deck.draw(1).unwrap();
-    deck.add_to_discard_pile(&mut card);
+    deck.add_to_discard_pile(card.pop().unwrap());
     assert_eq!(deck.stock().len(), 51);
     assert_eq!(deck.discard_pile().len(), 1);
 
     // Drawing several cards
     let mut cards = deck.draw(51).unwrap();
-    deck.add_to_discard_pile(&mut cards);
+    deck.add_multiple_to_discard_pile(&mut cards);
     assert_eq!(deck.stock().len(), 0);
     assert_eq!(deck.discard_pile().len(), 52);
 
@@ -96,7 +96,7 @@ fn draw_and_discard_deck() {
 fn shuffle_discarded_deck() {
     let mut deck = Deck::new(DeckConfig::new());
     let mut cards = deck.draw(52).unwrap();
-    deck.add_to_discard_pile(&mut cards);
+    deck.add_multiple_to_discard_pile(&mut cards);
     deck.shuffle_discarded();
 
     assert_eq!(deck.stock().len(), 52);
@@ -109,7 +109,7 @@ fn turnover_discarded_deck() {
     cfg.shuffle_seed = Some(0); // set this seed so that we don't shuffle...
     let mut deck = Deck::new(cfg);
     let mut cards = deck.draw(52).unwrap();
-    deck.add_to_discard_pile(&mut cards);
+    deck.add_multiple_to_discard_pile(&mut cards);
     deck.turnover_discarded();
 
     assert_eq!(deck.stock().len(), 52);
