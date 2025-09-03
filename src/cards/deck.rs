@@ -70,7 +70,7 @@ impl Deck {
         deck
     }
 
-    /// Reset the cards by creating a new deck and shuffling it.
+    /// (Re)creates the deck and shuffling it.
     pub fn reset(&mut self) {
         self.stock.clear();
         self.discard_pile.clear();

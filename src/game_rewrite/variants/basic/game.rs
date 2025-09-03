@@ -8,17 +8,21 @@ pub struct BasicRummyGame {
 
 impl BasicRummyGame {
     /// Initialize the Rummy game.
-    pub fn new(player_ids: Vec<usize>, deck_config: DeckConfig) -> Self {
+    pub fn new(player_ids: Vec<usize>, deck_config: DeckConfig) -> Result<Self, GameError> {
+        if player_ids.len() < 2 {
+            return Err(GameError::TooFewPlayers);
+        }
         let state = GameState::initialize(
             player_ids, 
             deck_config, 
             BasicState {}
         );
         let rules = BasicRules {};
-        Self {
+        let game = Self {
             state,
             rules
-        }
+        };
+        Ok(game)
     }
 
     fn cards_to_deal(&self) -> usize {
@@ -91,11 +95,10 @@ impl Game for BasicRummyGame {
         if self.state.phase != GamePhase::RoundEnd {
             return Err(GameError::RoundHasntEnded);
         }
-
+        
         let round_score = self.rules.calculate_round_score(&self.state)?;
         self.state.round_scores.insert(self.state.current_round, round_score);
-        self.state.current_round += 1;
-        self.state.current_player = self.starting_player_index();
+        self.state.start_new_round(self.cards_to_deal(), self.starting_player_index())?;
 
         Ok(())
     }

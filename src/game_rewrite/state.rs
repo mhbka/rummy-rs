@@ -65,23 +65,34 @@ where
         R::VariantState::validate_action(self, action)
     }
 
-    /// Start a round by wiping cards and dealing new ones.
+    /// Sets up a new round by:
+    /// - Incrementing `current_round`
+    /// - Setting players who joined in the last round as active
+    /// - Resetting the deck and dealing new hands
+    /// - Setting the current player as `starting_player_index`
     /// 
     /// Returns an `Err` if the game phase isn't `RoundEnded`.
     pub fn start_new_round(&mut self, cards_to_deal: usize, starting_player_index: usize) -> Result<(), GameError> {
         if self.phase != GamePhase::RoundEnd {
             return Err(GameError::RoundHasntEnded);
         }
+
         self.deck.reset();
+
         for player in &mut self.players {
+            if !player.active && player.joined_in_round == self.current_round {
+                player.active = true;
+            }
             player.melds = Vec::new();
             player.cards = self.deck
                 .draw(cards_to_deal)
                 .map_err(|err| InternalError::NoCardsInDeckOrDiscardPile)?;
         }
+
         self.current_player = starting_player_index;
         self.phase = GamePhase::Draw;
         self.current_round += 1;
+        
         Ok(())
     }
 
