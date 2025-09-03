@@ -25,6 +25,7 @@ impl BasicRummyGame {
         Ok(game)
     }
 
+    /// Returns the number of cards to deal at the start of a round.
     fn cards_to_deal(&self) -> usize {
         let active_players = self.state.players
             .iter()
@@ -38,6 +39,7 @@ impl BasicRummyGame {
         }
     }
     
+    /// Returns the player index who should start in a round.
     fn starting_player_index(&self) -> usize {
         let active_players = self.state.players
             .iter()
@@ -59,7 +61,7 @@ impl Game for BasicRummyGame {
     }
 
     fn quit_player(&mut self, player_id: usize) -> Result<(), GameError> {
-        return match self.state.players
+        match self.state.players
             .iter_mut()
             .find(|p| p.id == player_id)
         { 
@@ -68,7 +70,17 @@ impl Game for BasicRummyGame {
                 Ok(())
             },
             None => Err(GameError::QuitPlayerDoesntExist)
+        }?;
+
+        // End the game if only 1 active player is remaining
+        let num_active_players = self.state.players
+            .iter()
+            .fold(0, |acc, p| acc + p.active as usize);
+        if num_active_players < 2 {
+            self.state.phase = GamePhase::GameEnd;
         }
+
+        Ok(())
     }
 
     fn add_player(&mut self, player_id: usize) -> Result<(), GameError> {

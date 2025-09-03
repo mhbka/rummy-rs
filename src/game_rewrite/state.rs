@@ -47,7 +47,6 @@ where
         }
     } 
 
-
     /// Validate if the action is valid in the current gamestate.
     pub fn validate_action(&self, action: &GameAction) -> Result<(), ActionError> {
         match (self.phase, action) {
