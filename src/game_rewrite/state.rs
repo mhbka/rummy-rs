@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use crate::{cards::deck::{Deck, DeckConfig}, game_rewrite::{action::GameAction, error::{ActionError, FailedActionError, GameError, InternalError}, game::GameRules, score::{RoundScore, VariantPlayerScore}}, player::Player};
 
-/// The state of the game. Includes state common across all variants like players,
-/// as well as `variant_state` for variant-specific information.
+/// The state of the game. Includes state common across all variants like players/deck/current round,
+/// as well as `variant_state` for variant-specific state.
 /// 
 /// ## Note
 /// Ensure that mutable references to this are not handed outside of the `Game`.
@@ -85,20 +85,17 @@ where
         Ok(())
     }
 
-    /// If the game is still active (ie, not `RoundEnd` or `GameEnd`), handles going to the next phase. Else, does nothing.
-    pub fn next_active_phase(&mut self) {
-        self.phase = match self.phase {
-            GamePhase::Draw => GamePhase::Play,
-            GamePhase::Play => {
-                self.next_player();
-                GamePhase::Draw
-            },
-            other => other
-        };
+    /// Get a mutable reference to the current player.
+    /// 
+    /// Returns an `InternalError` if the `current_player` index is invalid for some reason.
+    pub fn get_current_player(&mut self) -> Result<&mut Player, InternalError> {
+        self.players
+            .get_mut(self.current_player)
+            .ok_or(InternalError::InvalidCurrentPlayer { current: self.current_player })
     }
 
     /// Increment `current_player` to the next active player.
-    fn next_player(&mut self) {
+    pub fn to_next_player(&mut self) {
         let mut next_player = (self.current_player + 1) % self.players.len();
         while !self.players[next_player].active {
             next_player = (self.current_player + 1) % self.players.len();
@@ -108,6 +105,12 @@ where
 }
 
 /// Represents the unique state held by a Rummy variant.
+/// 
+/// The game state consists of the general gamestate, which all Rummy variants have in common,
+/// and the variant gamestate, which holds state that the variant may uniquely require.
+/// 
+/// If a variant doesn't require any unique gamestate, they can simply use an empty struct and implement
+/// `VariantState` on it.
 pub trait VariantState<P: VariantPlayerScore, R: GameRules<VariantState = Self, VariantScore = P>>: Sized {
     /// Validate if an action is **generally** valid in the current gamestate, for the variant.
     /// 
@@ -122,7 +125,7 @@ pub trait VariantState<P: VariantPlayerScore, R: GameRules<VariantState = Self, 
     }
 }
 
-/// The possible phases of a Rummy game.
+/// The phases of a Rummy game.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum GamePhase {
     Draw,

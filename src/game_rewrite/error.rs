@@ -41,7 +41,7 @@ pub enum FailedActionError {
 
 /// Internal errors encountered during the game.
 /// 
-/// Possibly indicate invalid internal state; as a result, game may need to be terminated.
+/// This possibly indicate invalid internal state; as a result, the game may need to be terminated.
 #[derive(Debug, Clone)]
 pub enum InternalError {
     /// There are no/not enough cards left in deck and discard pile to draw the required amount.
@@ -51,6 +51,8 @@ pub enum InternalError {
 }
 
 /// Errors pertaining to the game itself, such as setup or adding/quitting players.
+/// 
+/// This doesn't indicate any issues with internal state, but rather that some function was called at the "wrong" time.
 #[derive(Debug, Clone)]
 pub enum GameError {
     /// Attempted to perform an end-of-round function (like score calculation) when it hasn't ended.

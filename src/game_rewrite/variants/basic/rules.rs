@@ -1,6 +1,12 @@
 use std::collections::HashMap;
-
 use crate::{cards::meld::{Meld, Meldable}, game_rewrite::{action::*, error::{ActionError, FailedActionError, GameError, InternalError}, game::GameRules, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState}, variants::basic::{score::BasicScore, state::BasicState}}};
+
+/// We always draw 1 card from the deck in Rummy.
+const DECK_DRAW_AMT: usize = 1;
+
+/// We always draw 1 card from the discard pile in Rummy.
+const DISCARD_PILE_DRAW_AMT: usize = 1;
+
 
 /// The rules for basic Rummy.
 pub struct BasicRules {}
@@ -9,37 +15,34 @@ impl GameRules for BasicRules {
     type VariantState = BasicState;
     type VariantScore = BasicScore;
 
-    fn handle_draw_deck(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: DrawDeckAction) -> Result<ActionOutcome, ActionError> {
+    /// Draws a single card from the deck, ignoring `action`.
+    fn handle_draw_deck(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: DrawDeckAction) -> Result<(), ActionError> {
         let mut card = state.deck
-            .draw(1)
+            .draw(DECK_DRAW_AMT)
             .map_err(|err| InternalError::NoCardsInDeckOrDiscardPile)?;
-        let player = state.players
-            .get_mut(state.current_player)
-            .ok_or(InternalError::InvalidCurrentPlayer { current: state.current_player })?;
+        let player = state.get_current_player()?;
         player.cards.append(&mut card);
 
-        state.next_active_phase();
+        state.phase = GamePhase::Play;
 
-        Ok(ActionOutcome::Continue)
+        Ok(())
     }
 
-    fn handle_draw_discard_pile(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: DrawDiscardPileAction) -> Result<ActionOutcome, ActionError> {
-        // in basic Rummy, we can only draw 1 card from the discard pile, so we ignore `action`
+    /// Draws a single card from the discard pile, ignoring `action`.
+    fn handle_draw_discard_pile(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: DrawDiscardPileAction) -> Result<(), ActionError> {
         let mut card = state.deck
-            .draw_discard_pile(Some(1))
+            .draw_discard_pile(Some(DISCARD_PILE_DRAW_AMT))
             .map_err(|err| FailedActionError::DiscardPileTooSmall)?;
 
-        let player = state.players
-            .get_mut(state.current_player)
-            .ok_or(InternalError::InvalidCurrentPlayer { current: state.current_player })?;
+        let player = state.get_current_player()?;
         player.cards.append(&mut card);
         
-        state.next_active_phase();
+        state.phase = GamePhase::Play;
 
-        Ok(ActionOutcome::Continue)
+        Ok(())
     }
 
-    fn handle_lay_off(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: LayOffAction) -> Result<ActionOutcome, ActionError> {
+    fn handle_lay_off(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: LayOffAction) -> Result<(), ActionError> {
         if action.target_player_index >= state.players.len() {
             return Err(ActionError::FailedAction(FailedActionError::InvalidPlayerIndex));
         }
@@ -51,12 +54,9 @@ impl GameRules for BasicRules {
             ));
         }
 
-        let current_player = state.players
-            .get_mut(state.current_player)
-            .ok_or(InternalError::InvalidCurrentPlayer { current: state.current_player })?;
-
         if state.current_player == action.target_player_index {
             // Laying off to own meld
+            let current_player = state.get_current_player()?;
             let target_meld = current_player.melds
                 .get_mut(action.target_meld_index)
                 .ok_or(FailedActionError::InvalidMeldIndex)?;
@@ -85,51 +85,42 @@ impl GameRules for BasicRules {
                 .map_err(|err| FailedActionError::FailedMeld(err))?;
         }
         
-        match state.players[state.current_player].cards.len() {
-            0 => {
-                state.phase = GamePhase::RoundEnd;
-                Ok(ActionOutcome::RoundEnded)
-            },
-            _ => Ok(ActionOutcome::Continue)
+        if state.get_current_player()?.cards.len() == 0 {
+            state.phase = GamePhase::RoundEnd;
         }
+
+        Ok(())
     }
 
-    fn handle_form_meld(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: FormMeldAction) -> Result<ActionOutcome, ActionError> {
-        let player = state.players
-            .get_mut(state.current_player)
-            .ok_or(InternalError::InvalidCurrentPlayer { current: state.current_player })?;
+    fn handle_form_meld(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: FormMeldAction) -> Result<(), ActionError> {
+        let player = state.get_current_player()?;
         let meld = Meld::new(&mut player.cards, &action.card_indices)
             .map_err(|err| FailedActionError::FailedMeld(err))?;
         player.melds.push(meld);
-        match player.cards.len() {
-            0 => {
-                state.phase = GamePhase::RoundEnd;
-                Ok(ActionOutcome::RoundEnded)
-            },
-            _ => Ok(ActionOutcome::Continue)
+
+        if player.cards.len() == 0 {
+            state.phase = GamePhase::RoundEnd;
         }
+
+        Ok(())
     }
 
-    fn handle_form_melds(&mut self, state: &mut GameState<BasicScore, BasicRules>, mut action: FormMeldsAction) -> Result<ActionOutcome, ActionError> {
-        let player = state.players
-            .get_mut(state.current_player)
-            .ok_or(InternalError::InvalidCurrentPlayer { current: state.current_player })?;
+    fn handle_form_melds(&mut self, state: &mut GameState<BasicScore, BasicRules>, mut action: FormMeldsAction) -> Result<(), ActionError> {
+        let player = state.get_current_player()?;
         let mut melds = Meld::multiple(&mut player.cards, &mut action.melds)
             .map_err(|err| FailedActionError::FailedMeld(err))?;
-        player.melds.append(&mut melds);
-        match player.cards.len() {
-            0 => {
-                state.phase = GamePhase::RoundEnd;
-                Ok(ActionOutcome::RoundEnded)
-            },
-            _ => Ok(ActionOutcome::Continue)
+        player.melds
+            .append(&mut melds);
+
+        if player.cards.len() == 0 {
+            state.phase = GamePhase::RoundEnd;
         }
+
+        Ok(())
     }
 
-    fn handle_discard(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: DiscardAction) -> Result<ActionOutcome, ActionError> {
-        let player = state.players
-            .get_mut(state.current_player)
-            .ok_or(InternalError::InvalidCurrentPlayer { current: state.current_player })?;
+    fn handle_discard(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: DiscardAction) -> Result<(), ActionError> {
+        let player = state.get_current_player()?;
         if action.card_index > player.cards.len() {
             let err = FailedActionError::InvalidCardIndex;
             return Err(
@@ -138,14 +129,15 @@ impl GameRules for BasicRules {
         }
         let discarded_card = player.cards.remove(action.card_index);
         state.deck.add_to_discard_pile(discarded_card);
-        match player.cards.len() {
+        match state.get_current_player()?.cards.len() {
             0 => {
                 state.phase = GamePhase::RoundEnd;
-                Ok(ActionOutcome::RoundEnded)
+                Ok(())
             },
             _ => {
-                state.next_active_phase();
-                Ok(ActionOutcome::Continue)
+                state.phase = GamePhase::Draw;
+                state.to_next_player();
+                Ok(())
             }
         }
     }
@@ -170,26 +162,5 @@ impl GameRules for BasicRules {
             winner_id
         };
         Ok(round_score)
-    }
-    
-    fn cards_to_deal(&self, state: &GameState<BasicScore, BasicRules>) -> usize {
-        let active_players = state.players
-            .iter()
-            .filter(|p| p.active)
-            .count();
-        match active_players {
-            2 => 10,
-            3..=4 => 7,
-            5..=6 => 6,
-            _ => 10 // NOTE: if >6 players, at least 2 decks are required
-        }
-    }
-    
-    fn starting_player_index(&self, state: &GameState<BasicScore, BasicRules>) -> usize {
-        let active_players = state.players
-            .iter()
-            .filter(|p| p.active)
-            .count();
-        state.current_round % active_players
     }
 }

@@ -43,8 +43,7 @@ pub struct LayOffAction {
     pub target_player_index: usize,
     /// The index of the meld on the table to add the card to.
     pub target_meld_index: usize,
-    /// The index within the meld to insert the card
-    /// (or, if that index contains a wildcard, replace it).
+    /// The index within the meld to insert the card (or, if that index contains a wildcard, replace it).
     pub position: usize,
 }
 
@@ -56,6 +55,10 @@ pub struct FormMeldAction {
 }
 
 /// Represents forming multiple melds at once.
+/// 
+/// ## Note
+/// The user is responsible for ensuring no overlapping of card indexes for each meld.
+/// If there are overlaps, an error will be returned when attempting to execute this action.
 #[derive(Debug, Clone)]
 pub struct FormMeldsAction {
     /// The list of indices of cards to each form into a meld.
@@ -69,12 +72,4 @@ pub struct DiscardAction {
     pub card_index: usize,
     /// For variants that require declaring when going out with this discard.
     pub declare_going_out: Option<bool>,
-}
-
-/// The possible outcomes of a `GameAction`.
-#[derive(Debug, Clone, PartialEq)]
-pub enum ActionOutcome {
-    Continue,
-    RoundEnded,
-    GameEnded,
 }

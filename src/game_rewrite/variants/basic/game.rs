@@ -1,4 +1,4 @@
-use crate::{cards::deck::DeckConfig, game_rewrite::{action::{ActionOutcome, GameAction}, error::{ActionError, GameError}, game::{Game, GameRules}, state::{GamePhase, GameState}, variants::basic::{rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
+use crate::{cards::deck::DeckConfig, game_rewrite::{action::GameAction, error::{ActionError, GameError}, game::{Game, GameRules}, state::{GamePhase, GameState}, variants::basic::{rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
 
 /// The basic/standard form of Rummy.
 pub struct BasicRummyGame {
@@ -20,12 +20,33 @@ impl BasicRummyGame {
             rules
         }
     }
+
+    fn cards_to_deal(&self) -> usize {
+        let active_players = self.state.players
+            .iter()
+            .filter(|p| p.active)
+            .count();
+        match active_players {
+            2 => 10,
+            3..=4 => 7,
+            5..=6 => 6,
+            _ => 10 // NOTE: if >6 players, at least 2 decks are required
+        }
+    }
+    
+    fn starting_player_index(&self) -> usize {
+        let active_players = self.state.players
+            .iter()
+            .filter(|p| p.active)
+            .count();
+        self.state.current_round % active_players
+    }
 }
 
 impl Game for BasicRummyGame {
     type Rules = BasicRules;
 
-    fn execute_action(&mut self, action: GameAction) -> Result<ActionOutcome, ActionError> {
+    fn execute_action(&mut self, action: GameAction) -> Result<(), ActionError> {
         self.rules.execute_action(&mut self.state, action)
     }
 
@@ -74,7 +95,7 @@ impl Game for BasicRummyGame {
         let round_score = self.rules.calculate_round_score(&self.state)?;
         self.state.round_scores.insert(self.state.current_round, round_score);
         self.state.current_round += 1;
-        self.state.current_player = self.rules.starting_player_index(&self.state);
+        self.state.current_player = self.starting_player_index();
 
         Ok(())
     }
