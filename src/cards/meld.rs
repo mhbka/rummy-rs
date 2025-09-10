@@ -25,6 +25,9 @@ pub trait Meldable: Sized {
     ///
     /// Else, `Err` is returned and `hand_cards` is left untouched.
     fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), MeldError>;
+
+    /// Inspect the meld's cards.
+    fn cards(&self) -> &Vec<Card>;
 }
 
 /// A Rummy meld.
@@ -132,6 +135,13 @@ impl Meldable for Meld {
         match self {
             Meld::Set(set) => set.layoff_card(hand_cards, index),
             Meld::Run(run) => run.layoff_card(hand_cards, index),
+        }
+    }
+
+    fn cards(&self) -> &Vec<Card> {
+        match self {
+            Meld::Set(set) => set.cards(),
+            Meld::Run(run) => run.cards()
         }
     }
 }
@@ -262,6 +272,10 @@ impl Meldable for Set {
         }
 
         Err(MeldError::InvalidLayoff { meld_type: "set" })
+    }
+
+    fn cards(&self) -> &Vec<Card> {
+        &self.cards
     }
 }
 
@@ -413,6 +427,10 @@ impl Meldable for Run {
         } else {
             Err(MeldError::InvalidLayoff { meld_type: "run" })
         }
+    }
+
+    fn cards(&self) -> &Vec<Card> {
+        &self.cards
     }
 }
 
