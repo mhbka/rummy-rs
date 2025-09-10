@@ -98,9 +98,18 @@ where
     /// Get a mutable reference to the current player.
     /// 
     /// Returns an `InternalError` if the `current_player` index is invalid for some reason.
-    pub fn get_current_player(&mut self) -> Result<&mut Player, InternalError> {
+    pub fn get_current_player_mut(&mut self) -> Result<&mut Player, InternalError> {
         self.players
             .get_mut(self.current_player)
+            .ok_or(InternalError::InvalidCurrentPlayer { current: self.current_player })
+    }
+
+    /// Get a reference to the current player.
+    /// 
+    /// Returns an `InternalError` if the `current_player` index is invalid for some reason.
+    pub fn get_current_player(&self) -> Result<&Player, InternalError> {
+        self.players
+            .get(self.current_player)
             .ok_or(InternalError::InvalidCurrentPlayer { current: self.current_player })
     }
 

@@ -30,8 +30,6 @@ pub struct DrawDeckAction {
 pub struct DrawDiscardPileAction {
     /// For variants that allow taking multiple cards from the discard pile.
     pub count: Option<u8>,
-    /// For variants that impose restrictions on what can be done after drawing from the discard pile.
-    pub must_use_immediately: Option<bool>,
 }
 
 /// Represents laying off a card into an existing meld.

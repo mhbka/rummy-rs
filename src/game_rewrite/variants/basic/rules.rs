@@ -20,7 +20,7 @@ impl GameRules for BasicRules {
         let mut card = state.deck
             .draw(DECK_DRAW_AMT)
             .map_err(|err| InternalError::NoCardsInDeckOrDiscardPile)?;
-        let player = state.get_current_player()?;
+        let player = state.get_current_player_mut()?;
         player.cards.append(&mut card);
 
         state.phase = GamePhase::Play;
@@ -34,7 +34,7 @@ impl GameRules for BasicRules {
             .draw_discard_pile(Some(DISCARD_PILE_DRAW_AMT))
             .map_err(|err| FailedActionError::DiscardPileTooSmall)?;
 
-        let player = state.get_current_player()?;
+        let player = state.get_current_player_mut()?;
         player.cards.append(&mut card);
         
         state.phase = GamePhase::Play;
@@ -56,7 +56,7 @@ impl GameRules for BasicRules {
 
         if state.current_player == action.target_player_index {
             // Laying off to own meld
-            let current_player = state.get_current_player()?;
+            let current_player = state.get_current_player_mut()?;
             let target_meld = current_player.melds
                 .get_mut(action.target_meld_index)
                 .ok_or(FailedActionError::InvalidMeldIndex)?;
@@ -85,7 +85,7 @@ impl GameRules for BasicRules {
                 .map_err(|err| FailedActionError::FailedMeld(err))?;
         }
         
-        if state.get_current_player()?.cards.len() == 0 {
+        if state.get_current_player_mut()?.cards.len() == 0 {
             state.phase = GamePhase::RoundEnd;
         }
 
@@ -93,7 +93,7 @@ impl GameRules for BasicRules {
     }
 
     fn handle_form_meld(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: FormMeldAction) -> Result<(), ActionError> {
-        let player = state.get_current_player()?;
+        let player = state.get_current_player_mut()?;
         let meld = Meld::new(&mut player.cards, &action.card_indices)
             .map_err(|err| FailedActionError::FailedMeld(err))?;
         player.melds.push(meld);
@@ -106,7 +106,7 @@ impl GameRules for BasicRules {
     }
 
     fn handle_form_melds(&mut self, state: &mut GameState<BasicScore, BasicRules>, mut action: FormMeldsAction) -> Result<(), ActionError> {
-        let player = state.get_current_player()?;
+        let player = state.get_current_player_mut()?;
         let mut melds = Meld::multiple(&mut player.cards, &mut action.melds)
             .map_err(|err| FailedActionError::FailedMeld(err))?;
         player.melds
@@ -120,7 +120,7 @@ impl GameRules for BasicRules {
     }
 
     fn handle_discard(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: DiscardAction) -> Result<(), ActionError> {
-        let player = state.get_current_player()?;
+        let player = state.get_current_player_mut()?;
         if action.card_index > player.cards.len() {
             let err = FailedActionError::InvalidCardIndex;
             return Err(
@@ -129,7 +129,7 @@ impl GameRules for BasicRules {
         }
         let discarded_card = player.cards.remove(action.card_index);
         state.deck.add_to_discard_pile(discarded_card);
-        match state.get_current_player()?.cards.len() {
+        match state.get_current_player_mut()?.cards.len() {
             0 => {
                 state.phase = GamePhase::RoundEnd;
                 Ok(())
