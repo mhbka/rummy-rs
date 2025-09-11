@@ -136,7 +136,7 @@ impl Debug for Card {
 
 impl Display for Card {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?} of {:?}", self.rank, self.suit)
+        write!(f, "{}{}", self.rank.as_str(), self.suit.as_str())
     }
 }
 
