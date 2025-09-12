@@ -73,7 +73,7 @@ where
     /// Returns an `Err` if the game phase isn't `RoundEnded`.
     pub fn start_new_round(&mut self, cards_to_deal: usize, starting_player_index: usize) -> Result<(), GameError> {
         if self.phase != GamePhase::RoundEnd {
-            return Err(GameError::RoundHasntEnded);
+            return Err(GameError::WrongGamePhase);
         }
 
         self.deck.reset();

@@ -173,6 +173,9 @@ impl App {
                 self.state = AppState::DiscardInput;
                 self.input_mode = InputMode::DiscardCardIndex;
             }
+            KeyCode::Char('4') => {
+                self.execute_sort_hand();
+            }
             _ => {}
         }
     }
@@ -306,6 +309,22 @@ impl App {
                 self.game = None;
             }
             _ => {}
+        }
+    }
+
+    fn execute_sort_hand(&mut self) {
+        if let Some(ref mut game) = self.game {
+            let current_player = game.get_state()
+                .get_current_player()
+                .unwrap();
+            let mut current_player_hand = current_player
+                .cards()
+                .clone();
+            current_player_hand.sort();
+            game
+                .rearrange_player_hand(current_player.id(), current_player_hand)
+                .expect(&format!("{:?}", game.get_state().phase));
+            self.update_game_state();
         }
     }
 

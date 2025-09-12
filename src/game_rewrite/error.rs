@@ -55,16 +55,18 @@ pub enum InternalError {
 /// This doesn't indicate any issues with internal state, but rather that some function was called at the "wrong" time.
 #[derive(Debug, Clone)]
 pub enum GameError {
-    /// Attempted to perform an end-of-round function (like score calculation) when it hasn't ended.
-    RoundHasntEnded,
-    /// Tried to quit a player which doesn't exist.
-    QuitPlayerDoesntExist,
+    /// Attempted to perform some action in the wrong game phase.
+    WrongGamePhase,
+    /// Tried to reference a player ID which doesn't exist.
+    PlayerDoesntExist,
     /// Tried to add a player with already existing ID.
     AddedPlayerAlreadyExists,
     /// The game already has maximum number of players.
     MaxPlayersReached,
     /// The game has too few players.
     TooFewPlayers,
+    /// Failed to apply a hand rearrangement, likely due to a mismatch of hand and newly arranged cards.
+    FailedHandRearrangement, 
     /// No winner was found for the round.
     RoundHasNoWinner,
     /// Some other internal error occurred.

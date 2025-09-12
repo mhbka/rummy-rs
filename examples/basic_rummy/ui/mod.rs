@@ -31,9 +31,7 @@ pub fn ui(f: &mut Frame, app: &App) {
 
     match app.state {
         AppState::MainMenu => render_main_menu(f, chunks[1]),
-        AppState::DrawPhase | AppState::PlayPhase | AppState::GamePlay => {
-            render_game_state(f, chunks[1], app)
-        }
+        AppState::DrawPhase | AppState::PlayPhase | AppState::GamePlay => render_game_state(f, chunks[1], app),
         AppState::LayOffInput => render_layoff_input(f, chunks[1], app),
         AppState::FormMeldInput => render_meld_input(f, chunks[1], app),
         AppState::DiscardInput => render_discard_input(f, chunks[1], app),
@@ -71,7 +69,7 @@ fn render_instructions(f: &mut Frame, area: ratatui::layout::Rect, app: &App) {
     let instructions = match app.state {
         AppState::MainMenu => "Press Enter to start new game • Q to quit",
         AppState::DrawPhase => "Press 1 for deck, 2 for discard pile • ESC to cancel • Q to quit",
-        AppState::PlayPhase => "Press 1 for layoff, 2 for meld, 3 for discard • Q to quit",
+        AppState::PlayPhase => "Press 1 for layoff, 2 for meld, 3 for discard, 4 to sort your hand • Q to quit",
         AppState::LayOffInput => "Enter card index, then target player, meld, position • ESC to cancel",
         AppState::FormMeldInput => "Enter card indices, press D when done • ESC to cancel",
         AppState::DiscardInput => "Enter card index to discard • ESC to cancel",

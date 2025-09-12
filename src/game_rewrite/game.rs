@@ -1,5 +1,5 @@
 use super::action::*;
-use crate::game_rewrite::{error::{ActionError, GameError}, score::{VariantPlayerScore, RoundScore}, state::{GamePhase, GameState, VariantState}};
+use crate::{cards::card::Card, game_rewrite::{error::{ActionError, GameError}, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState, VariantState}}};
 
 /// Represents a Rummy game.
 pub trait Game {
@@ -23,6 +23,13 @@ pub trait Game {
     /// 
     /// Returns an `Err` if the maximum number of players has been reached.
     fn add_player(&mut self, player_id: usize) -> Result<(), GameError>;
+
+    /// Rearranges the player's cards according to what is present in `new_arrangement`.
+    /// 
+    /// Returns an `Err` if such player doesn't exist, 
+    /// `new_arrangement` doesn't contain the exact cards currently in that player's hand,
+    /// or the game phase isn't `Draw` or `Play`.
+    fn rearrange_player_hand(&mut self, player_id: usize, new_arrangement: Vec<Card>) -> Result<(), GameError>;
 
     /// Calculate and store round scores and start the next round.
     /// 

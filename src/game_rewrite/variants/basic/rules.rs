@@ -144,9 +144,7 @@ impl GameRules for BasicRules {
 
     fn calculate_round_score(&mut self, state: &GameState<BasicScore, BasicRules>) -> Result<RoundScore<Self::VariantScore>, GameError> {
         if state.phase != GamePhase::RoundEnd {
-            return Err(
-                GameError::RoundHasntEnded
-            );
+            return Err(GameError::WrongGamePhase);
         }
         let player_scores: HashMap<_, _> = state.players
             .iter()
