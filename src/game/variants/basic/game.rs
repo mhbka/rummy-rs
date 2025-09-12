@@ -111,8 +111,8 @@ impl Game for BasicRummyGame {
         }
         
         match self.state.players
-        .iter_mut()
-        .find(|p| p.id == player_id)
+            .iter_mut()
+            .find(|p| p.id == player_id)
         {
             Some(player) => {
                 // check that player's hand and `new_arrangement` contain same cards

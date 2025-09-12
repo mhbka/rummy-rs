@@ -1,5 +1,6 @@
-pub mod actions;
-pub mod error;
-pub mod phases;
+pub mod game;
+pub mod action;
 pub mod state;
+pub mod score;
 pub mod variants;
+pub mod error;
