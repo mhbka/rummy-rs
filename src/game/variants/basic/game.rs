@@ -1,53 +1,63 @@
 use std::collections::HashMap;
-
-use crate::{cards::{card::Card, deck::DeckConfig}, game_rewrite::{action::GameAction, error::{ActionError, GameError}, game::{Game, GameRules}, state::{GamePhase, GameState}, variants::basic::{rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
+use crate::{cards::{card::Card, deck::DeckConfig, suit_rank::Rank}, game::{action::GameAction, error::{ActionError, GameError, GameSetupError}, game::Game, rules::GameRules, state::{GamePhase, GameState}, variants::basic::{config::{BasicConfig, DrawDiscardPileOverride}, rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
 
 /// The basic/standard form of Rummy.
 pub struct BasicRummyGame {
     state: GameState<BasicScore, BasicRules>,
-    rules: BasicRules
+    rules: BasicRules,
+    config: BasicConfig
 }
 
 impl BasicRummyGame {
     /// Initialize the Rummy game.
-    pub fn new(player_ids: Vec<usize>, deck_config: DeckConfig) -> Result<Self, GameError> {
-        if player_ids.len() < 2 {
-            return Err(GameError::TooFewPlayers);
-        }
+    /// 
+    /// Returns an `Err` if there are too few/too many players.
+    pub fn new(
+        player_ids: Vec<usize>, 
+        config: BasicConfig, 
+        deck_config: DeckConfig
+    ) -> Result<Self, GameSetupError> {
         let state = GameState::initialize(
             player_ids, 
             deck_config, 
             BasicState {}
         );
-        let rules = BasicRules {};
+        let rules = BasicRules::new(config.clone());
         let game = Self {
             state,
-            rules
+            rules,
+            config
         };
+
+        game.validate_setup()?;
+
         Ok(game)
     }
 
-    /// Returns the number of cards to deal at the start of a round.
-    fn cards_to_deal(&self) -> usize {
+    /// Validates setup of the game.
+    /// We can call this when first initializing the game, and before every new round.
+    /// 
+    /// At the moment, just checks that we can deal cards to all players and have enough left in the stock for 1 iteration of draws.
+    fn validate_setup(&self) -> Result<(), GameSetupError> {
+        let deal_amount = self.rules.cards_to_deal(&self.state);
+        let draw_amount = self.rules.cards_to_draw_from_deck(&self.state);
         let active_players = self.state.players
             .iter()
             .filter(|p| p.active)
             .count();
-        match active_players {
-            2 => 10,
-            3..=4 => 7,
-            5..=6 => 6,
-            _ => 10 // NOTE: if >6 players, at least 2 decks are required
+
+        let deck_config = self.state.deck.config();
+        let mut deck_size = deck_config.pack_count * 52;
+        if let Some(Rank::Joker) = deck_config.wildcard_rank {
+            deck_size += deck_config.pack_count * 2;
         }
-    }
-    
-    /// Returns the player index who should start in a round.
-    fn starting_player_index(&self) -> usize {
-        let active_players = self.state.players
-            .iter()
-            .filter(|p| p.active)
-            .count();
-        self.state.current_round % active_players
+
+        let min_draw_size = (active_players * deal_amount) + (active_players * draw_amount);
+
+        match deck_size < min_draw_size {
+            true => Err(GameSetupError::NotEnoughCards),
+            false => Ok(())
+        }
     }
 }
 
@@ -146,7 +156,10 @@ impl Game for BasicRummyGame {
         
         let round_score = self.rules.calculate_round_score(&self.state)?;
         self.state.round_scores.insert(self.state.current_round, round_score);
-        self.state.start_new_round(self.cards_to_deal(), self.starting_player_index())?;
+
+        let cards_to_deal = self.rules.cards_to_deal(&self.state);
+        let starting_player_index = self.rules.starting_player_index(&self.state);
+        self.state.start_new_round(cards_to_deal, starting_player_index)?;
 
         Ok(())
     }

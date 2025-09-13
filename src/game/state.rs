@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{cards::deck::{Deck, DeckConfig}, game_rewrite::{action::GameAction, error::{ActionError, FailedActionError, GameError, InternalError}, game::GameRules, score::{RoundScore, VariantPlayerScore}}, player::Player};
+use crate::{cards::deck::{Deck, DeckConfig}, game::{action::GameAction, error::{ActionError, FailedActionError, GameError, InternalError}, rules::GameRules, score::{RoundScore, VariantPlayerScore}}, player::Player};
 
 /// The state of the game. Includes state common across all variants like players/deck/current round,
 /// as well as `variant_state` for variant-specific state.

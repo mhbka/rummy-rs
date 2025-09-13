@@ -1,24 +1,73 @@
 use std::collections::HashMap;
-use crate::{cards::meld::{Meld, Meldable}, game_rewrite::{action::*, error::{ActionError, FailedActionError, GameError, InternalError}, game::GameRules, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState}, variants::basic::{score::BasicScore, state::BasicState}}};
-
-/// We always draw 1 card from the deck in Rummy.
-const DECK_DRAW_AMT: usize = 1;
-
-/// We always draw 1 card from the discard pile in Rummy.
-const DISCARD_PILE_DRAW_AMT: usize = 1;
-
+use crate::{cards::meld::{Meld, Meldable}, game::{action::*, error::{ActionError, FailedActionError, GameError, InternalError}, rules::GameRules, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState}, variants::basic::{config::{BasicConfig, DrawDiscardPileOverride}, game::BasicRummyGame, score::BasicScore, state::BasicState}}};
 
 /// The rules for basic Rummy.
-pub struct BasicRules {}
+pub struct BasicRules {
+    config: BasicConfig
+}
+
+impl BasicRules {
+    /// Initialize the rules.
+    pub fn new(config: BasicConfig) -> Self {
+        Self { config }
+    }
+
+    /// The number of cards to deal at the start of a round.
+    pub(super) fn cards_to_deal(&self, state: &GameState<BasicScore, BasicRules>) -> usize {
+        if let Some(count) = self.config.deal_amount {
+            return count;
+        }
+        let active_players = state.players
+            .iter()
+            .filter(|p| p.active)
+            .count();
+        match active_players {
+            2 => 10,
+            3..=4 => 7,
+            5..=6 => 6,
+            _ => 10 // NOTE: if >6 players, at least 2 decks are required
+        }
+    }
+
+    /// The number of cards to draw from the deck.
+    pub(super) fn cards_to_draw_from_deck(&self, state: &GameState<BasicScore, BasicRules>) -> usize {
+        if let Some(value) = &self.config.draw_deck_amount {
+            *value
+        } else {
+            1
+        }
+    }
+
+    /// The number of cards to draw from the discard pile.
+    pub(super) fn cards_to_draw_from_discard_pile(&self, state: &GameState<BasicScore, BasicRules>, given_amount: usize) -> usize {
+        if let Some(value) = &self.config.draw_discard_pile_amount {
+            match value {
+                DrawDiscardPileOverride::PlayerChooses => given_amount,
+                DrawDiscardPileOverride::WholePile => state.deck.discard_pile().len(),
+                DrawDiscardPileOverride::Constant(amount) => *amount
+            }
+        } else {
+            1
+        }
+    }
+    
+    /// Returns the player index who should start in a round.
+    pub(super) fn starting_player_index(&self, state: &GameState<BasicScore, BasicRules>,) -> usize {
+        let active_players = state.players
+            .iter()
+            .filter(|p| p.active)
+            .count();
+        state.current_round % active_players
+    }
+}
 
 impl GameRules for BasicRules {
     type VariantState = BasicState;
     type VariantScore = BasicScore;
 
-    /// Draws a single card from the deck, ignoring `action`.
-    fn handle_draw_deck(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: DrawDeckAction) -> Result<(), ActionError> {
+    fn handle_draw_deck(&self, state: &mut GameState<BasicScore, BasicRules>, action: DrawDeckAction) -> Result<(), ActionError> {
         let mut card = state.deck
-            .draw(DECK_DRAW_AMT)
+            .draw(self.cards_to_draw_from_deck(state))
             .map_err(|err| InternalError::NoCardsInDeckOrDiscardPile)?;
         let player = state.get_current_player_mut()?;
         player.cards.append(&mut card);
@@ -28,12 +77,13 @@ impl GameRules for BasicRules {
         Ok(())
     }
 
-    /// Draws a single card from the discard pile, ignoring `action`.
-    fn handle_draw_discard_pile(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: DrawDiscardPileAction) -> Result<(), ActionError> {
-        let mut card = state.deck
-            .draw_discard_pile(Some(DISCARD_PILE_DRAW_AMT))
-            .map_err(|err| FailedActionError::DiscardPileTooSmall)?;
+    fn handle_draw_discard_pile(&self, state: &mut GameState<BasicScore, BasicRules>, action: DrawDiscardPileAction) -> Result<(), ActionError> {
+        let requested_amount = if let Some(val) = action.count { val as usize } else { 1 };
+        let draw_amount = self.cards_to_draw_from_discard_pile(state, requested_amount);
 
+        let mut card = state.deck
+            .draw_discard_pile(draw_amount)
+            .map_err(|err| FailedActionError::DiscardPileTooSmall)?;
         let player = state.get_current_player_mut()?;
         player.cards.append(&mut card);
         
@@ -42,7 +92,7 @@ impl GameRules for BasicRules {
         Ok(())
     }
 
-    fn handle_lay_off(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: LayOffAction) -> Result<(), ActionError> {
+    fn handle_lay_off(&self, state: &mut GameState<BasicScore, BasicRules>, action: LayOffAction) -> Result<(), ActionError> {
         if action.target_player_index >= state.players.len() {
             return Err(ActionError::FailedAction(FailedActionError::InvalidPlayerIndex));
         }
@@ -92,7 +142,7 @@ impl GameRules for BasicRules {
         Ok(())
     }
 
-    fn handle_form_meld(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: FormMeldAction) -> Result<(), ActionError> {
+    fn handle_form_meld(&self, state: &mut GameState<BasicScore, BasicRules>, action: FormMeldAction) -> Result<(), ActionError> {
         let player = state.get_current_player_mut()?;
         let meld = Meld::new(&mut player.cards, &action.card_indices)
             .map_err(|err| FailedActionError::FailedMeld(err))?;
@@ -105,7 +155,7 @@ impl GameRules for BasicRules {
         Ok(())
     }
 
-    fn handle_form_melds(&mut self, state: &mut GameState<BasicScore, BasicRules>, mut action: FormMeldsAction) -> Result<(), ActionError> {
+    fn handle_form_melds(&self, state: &mut GameState<BasicScore, BasicRules>, mut action: FormMeldsAction) -> Result<(), ActionError> {
         let player = state.get_current_player_mut()?;
         let mut melds = Meld::multiple(&mut player.cards, &mut action.melds)
             .map_err(|err| FailedActionError::FailedMeld(err))?;
@@ -119,7 +169,7 @@ impl GameRules for BasicRules {
         Ok(())
     }
 
-    fn handle_discard(&mut self, state: &mut GameState<BasicScore, BasicRules>, action: DiscardAction) -> Result<(), ActionError> {
+    fn handle_discard(&self, state: &mut GameState<BasicScore, BasicRules>, action: DiscardAction) -> Result<(), ActionError> {
         let player = state.get_current_player_mut()?;
         if action.card_index > player.cards.len() {
             let err = FailedActionError::InvalidCardIndex;
@@ -142,7 +192,7 @@ impl GameRules for BasicRules {
         }
     }
 
-    fn calculate_round_score(&mut self, state: &GameState<BasicScore, BasicRules>) -> Result<RoundScore<Self::VariantScore>, GameError> {
+    fn calculate_round_score(&self, state: &GameState<BasicScore, BasicRules>) -> Result<RoundScore<Self::VariantScore>, GameError> {
         if state.phase != GamePhase::RoundEnd {
             return Err(GameError::WrongGamePhase);
         }

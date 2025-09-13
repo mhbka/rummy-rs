@@ -5,7 +5,7 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph, Wrap},
     Frame,
 };
-use rummy::{cards::meld::Meldable, game_rewrite::game::Game};
+use rummy::{cards::meld::Meldable, game::game::Game};
 
 use crate::app::{App, InputMode};
 

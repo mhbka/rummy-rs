@@ -1,4 +1,4 @@
-use crate::game_rewrite::{state::VariantState, variants::basic::{rules::BasicRules, score::BasicScore}};
+use crate::game::{state::VariantState, variants::basic::{rules::BasicRules, score::BasicScore}};
 
 /// Basic Rummy requires no additional state, so this is an empty struct.
 pub struct BasicState {}

@@ -1,4 +1,4 @@
-use crate::{game_rewrite::score::VariantPlayerScore, player::Player};
+use crate::{game::score::VariantPlayerScore, player::Player};
 
 /// A single player's score in basic Rummy.
 #[derive(Debug)]

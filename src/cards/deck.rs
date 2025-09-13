@@ -7,11 +7,26 @@ use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use strum::IntoEnumIterator;
 
-/// Configurable parameters for a deck:
-/// - `shuffle_seed`: Optional seed for shuffling; `0` results in no shuffle
-/// - `pack_count`: Number of card packs to include in the deck
-/// - `high_rank`: Whether to override the highest rank (default being King)
-/// - `wildcard_rank`: Whether to have a wildcard rank (can also be Joker)
+/// Configurable values for a deck's behaviour.
+/// 
+/// ### `shuffle_seed`
+/// Optional seed for shuffling, where `0` results in no shuffle. 
+/// The default is a completely randomized shuffle.
+/// 
+/// ### `pack_count`
+/// The number of card packs to include in the deck.
+/// 
+/// ### `high_rank`
+/// Optional rank to override the highest rank.
+/// If set, the rank right after it becomes the lowest rank. 
+/// 
+/// For example, if this is `Five`, the lowest ranks would be `Six` -> `Seven` -> `Eight` ...
+/// 
+/// The default is King.
+/// 
+/// ### `wildcard_rank`
+/// Optional rank to denote as the wildcard (typically the Joker).
+/// The default is to have no wildcards.
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct DeckConfig {
     pub shuffle_seed: Option<u64>,
@@ -123,21 +138,19 @@ impl Deck {
     ///
     /// If the amount is greater than discard pile's size, or the discard pile is empty,
     /// return `Err`.
-    ///
-    /// If `None` amount is specified, attempt to draw the entire discard pile.
-    pub fn draw_discard_pile(&mut self, amount: Option<usize>) -> Result<Vec<Card>, String> {
+    pub fn draw_discard_pile(&mut self, amount: usize) -> Result<Vec<Card>, String> {
         let discard_size = self.discard_pile.len();
         if discard_size == 0 {
             return Err(format!("Can't draw from empty discard pile"));
-        } else if let Some(a) = amount {
-            if a > discard_size {
+        } 
+        else {
+            if amount > discard_size {
                 return Err(format!(
-                    "Draw amount ({a}) greater than discard pile size ({discard_size})"
+                    "Draw amount ({amount}) greater than discard pile size ({discard_size})"
                 ));
             }
-            return Ok(self.discard_pile.split_off(discard_size - a));
+            return Ok(self.discard_pile.split_off(discard_size - amount));
         }
-        return Ok(self.discard_pile.split_off(0));
     }
 
     /// Drains `cards` into the discard pile.

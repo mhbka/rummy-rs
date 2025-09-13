@@ -1,4 +1,4 @@
-use crate::{cards::meld::MeldError, game_rewrite::state::GamePhase};
+use crate::{cards::meld::MeldError, game::state::GamePhase};
 
 /// Errors that may be returned from executing a `GameAction`.
 #[derive(Debug, Clone)]
@@ -50,7 +50,7 @@ pub enum InternalError {
     InvalidCurrentPlayer { current: usize }
 }
 
-/// Errors pertaining to the game itself, such as setup or adding/quitting players.
+/// Errors pertaining to the game itself.
 /// 
 /// This doesn't indicate any issues with internal state, but rather that some function was called at the "wrong" time.
 #[derive(Debug, Clone)]
@@ -61,8 +61,8 @@ pub enum GameError {
     PlayerDoesntExist,
     /// Tried to add a player with already existing ID.
     AddedPlayerAlreadyExists,
-    /// The game already has maximum number of players.
-    MaxPlayersReached,
+    /// The game has too many players.
+    TooManyPlayers,
     /// The game has too few players.
     TooFewPlayers,
     /// Failed to apply a hand rearrangement, likely due to a mismatch of hand and newly arranged cards.
@@ -77,4 +77,16 @@ impl From<InternalError> for GameError {
     fn from(value: InternalError) -> Self {
         Self::Internal(value)
     }
+}
+
+/// Errors while creating a game.
+pub enum GameSetupError {
+    /// The game has too many players.
+    TooManyPlayers,
+    /// The game has too few players.
+    TooFewPlayers,
+    /// The deck doesn't have enough cards for the number of players.
+    /// 
+    /// **NOTE**: We interpret enough as enough for all players to be dealt + draw from the deck at least once.
+    NotEnoughCards
 }

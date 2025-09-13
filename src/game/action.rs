@@ -20,10 +20,7 @@ pub enum GameAction {
 
 /// Represents drawing from the deck.
 #[derive(Debug, Clone)]
-pub struct DrawDeckAction {
-    /// For variants that allow drawing multiple cards from the deck.
-    pub count: Option<u8>,
-}
+pub struct DrawDeckAction {}
 
 /// Represents drawing from the discard pile.
 #[derive(Debug, Clone)]

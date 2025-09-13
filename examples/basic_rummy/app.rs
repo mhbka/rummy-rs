@@ -1,7 +1,7 @@
 use crossterm::event::KeyCode;
 use rummy::{
     cards::{deck::DeckConfig, meld::Meldable}, 
-    game_rewrite::{
+    game::{
         action::{DiscardAction, DrawDeckAction, DrawDiscardPileAction, FormMeldAction, GameAction, LayOffAction}, 
         error::GameError, 
         game::Game, 

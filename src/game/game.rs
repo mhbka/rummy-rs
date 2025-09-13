@@ -1,5 +1,5 @@
 use super::action::*;
-use crate::{cards::card::Card, game_rewrite::{error::{ActionError, GameError}, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState, VariantState}}};
+use crate::{cards::card::Card, game::{error::{ActionError, GameError}, rules::GameRules, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState, VariantState}}};
 
 /// Represents a Rummy game.
 pub trait Game {
@@ -36,46 +36,3 @@ pub trait Game {
     /// Returns an `Err` if the game phase is not `RoundEnd`.
     fn next_round(&mut self) -> Result<(), GameError>;
 }
-
-/// Represents the "rule engine" of a Rummy game, handling action execution and score calculation.
-pub trait GameRules where Self: Sized {
-    /// The state that this variant requires.
-    type VariantState: VariantState<Self::VariantScore, Self>;
-    /// The score type of this variant (for each player).
-    type VariantScore: VariantPlayerScore;
-
-    /// Executes an action, returning an `()` or `ActionError`.
-    fn execute_action(&mut self, state: &mut GameState<Self::VariantScore, Self>, action: GameAction) -> Result<(), ActionError> {
-        state.validate_action(&action)?;
-        match action {
-            GameAction::DrawDeck(action) => self.handle_draw_deck(state, action),
-            GameAction::DrawDiscardPile(action) => self.handle_draw_discard_pile(state, action),
-            GameAction::LayOff(action) => self.handle_lay_off(state, action),
-            GameAction::FormMeld(action) => self.handle_form_meld(state, action),
-            GameAction::FormMelds(action) => self.handle_form_melds(state, action),
-            GameAction::Discard(action) => self.handle_discard(state, action),
-        }
-    }
-
-    /// Handle drawing from the deck.
-    fn handle_draw_deck(&mut self, state: &mut GameState<Self::VariantScore, Self>, action: DrawDeckAction) -> Result<(), ActionError>;
-
-    /// Handle drawing from the discard pile.
-    fn handle_draw_discard_pile(&mut self, state: &mut GameState<Self::VariantScore, Self>, action: DrawDiscardPileAction) -> Result<(), ActionError>;
-
-    /// Handle laying off a card from the player's hand.
-    fn handle_lay_off(&mut self, state: &mut GameState<Self::VariantScore, Self>, action: LayOffAction) -> Result<(), ActionError>;
-
-    /// Handle forming a single meld.
-    fn handle_form_meld(&mut self, state: &mut GameState<Self::VariantScore, Self>, action: FormMeldAction) -> Result<(), ActionError>;
-
-    /// Handle forming multiple melds at one time. Either all melds successfully form, or none do.
-    fn handle_form_melds(&mut self, state: &mut GameState<Self::VariantScore, Self>, action: FormMeldsAction) -> Result<(), ActionError>;
-
-    /// Handle discarding a card.
-    fn handle_discard(&mut self, state: &mut GameState<Self::VariantScore, Self>, action: DiscardAction) -> Result<(), ActionError>;
-
-    /// Calculate the score for a round. Returns an `Err` if the round hasn't ended.
-    fn calculate_round_score(&mut self, state: &GameState<Self::VariantScore, Self>) -> Result<RoundScore<Self::VariantScore>, GameError>;
-}
-
