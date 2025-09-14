@@ -1,5 +1,5 @@
 use super::action::*;
-use crate::{cards::card::Card, game::{error::{ActionError, GameError}, rules::GameRules, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState, VariantState}}};
+use crate::{cards::card::{Card, CardData}, game::{error::{ActionError, GameError}, rules::GameRules, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState, VariantState}}};
 
 /// Represents a Rummy game.
 pub trait Game {

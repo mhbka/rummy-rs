@@ -15,7 +15,7 @@ pub struct RoundScore<P: VariantPlayerScore> {
 /// 
 /// Since different scoring systems may require different information to score a player, 
 /// this is left out of the trait.
-pub trait VariantPlayerScore: Sized {
+pub trait VariantPlayerScore: Sized + Clone {
     /// Represent the score as an `i32` value.
     /// 
     /// It is up to the user to interpret this value.

@@ -11,13 +11,18 @@ use std::{
 };
 
 /// The data of a card.
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct CardData {
     pub rank: Rank,
     pub suit: Suit,
 }
 
 /// A card.
+/// 
+/// This contains an `Arc` to the deck's `DeckConfig`, used for calculating orders when taking
+/// into account custom high ranks, amongst other things.
+/// 
+/// This means this isn't (de)serializable. For that, use `CardData`.
 #[derive(Clone)]
 pub struct Card {
     pub(crate) rank: Rank,
@@ -32,6 +37,11 @@ impl Card {
             rank: self.rank, 
             suit: self.suit 
         }
+    }
+
+    /// Get the card's `DeckConfig`.
+    pub fn deck_config(&self) -> Arc<DeckConfig> {
+        self.deck_config.clone()
     }
 
     /// Obtain the "value" of a `Card`.

@@ -6,7 +6,6 @@ use crate::{cards::{card::Card, deck::DeckConfig, suit_rank::Rank}, game::{actio
 pub struct BasicRummyGame {
     state: GameState<BasicScore, BasicRules>,
     rules: BasicRules,
-    config: BasicConfig
 }
 
 impl BasicRummyGame {
@@ -28,7 +27,6 @@ impl BasicRummyGame {
         let game = Self {
             state,
             rules,
-            config
         };
 
         game.validate_setup()?;
