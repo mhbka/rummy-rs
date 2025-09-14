@@ -72,7 +72,7 @@ impl Meld {
         all_indices.dedup();
         let dedup_len = all_indices.len();
         if before_len != dedup_len {
-            let err = Box::new(MeldError::OverlappingIndex);
+            let err = Box::new(MeldError::DuplicateIndex);
             return Err(
                 MeldError::FailedMultipleMelds { indices_index: 0, err }
             );
@@ -113,7 +113,12 @@ impl Meldable for Meld {
     fn new(hand_cards: &mut Vec<Card>, indices: &[usize]) -> Result<Self, MeldError>
     where
         Self: Sized,
-    {
+    {   
+        let set: HashSet<_> = indices.iter().collect();
+        if set.len() != indices.len() {
+            return Err(MeldError::DuplicateIndex);
+        }
+
         match Set::new(hand_cards, indices) {
             Ok(set) => Ok(Meld::Set(set)),
             Err(set_err) => match Run::new(hand_cards, indices) {
@@ -444,8 +449,8 @@ pub enum MeldError {
     InsufficientCards { provided: usize, minimum: usize },
     #[error("Index {index} is out of bounds (max valid: {max_valid})")]
     InvalidIndex { index: usize, max_valid: usize },
-    #[error("At least 1 index in the indices are overlapping")]
-    OverlappingIndex,
+    #[error("At least 1 index in the indices are duplicated")]
+    DuplicateIndex,
     #[error("Cards do not form a valid set")]
     InvalidSet,
     #[error("Cards don't form a valid run")]

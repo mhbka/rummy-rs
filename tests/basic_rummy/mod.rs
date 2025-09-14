@@ -3,3 +3,5 @@ pub mod default_dealing;
 pub mod override_dealing;
 pub mod player_ops;
 pub mod drawing;
+pub mod hand_rearrangement;
+pub mod form_meld;

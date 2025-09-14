@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 
 /// Poker suits.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, EnumIter)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, EnumIter)]
 pub enum Suit {
     Joker,
     Clubs,
@@ -25,7 +25,7 @@ impl Suit {
 }
 
 /// Poker ranks.    
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, EnumIter)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, EnumIter)]
 pub enum Rank {
     Joker,
     Ace,

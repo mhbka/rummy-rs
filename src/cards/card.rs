@@ -11,7 +11,7 @@ use std::{
 };
 
 /// The data of a card.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct CardData {
     pub rank: Rank,
     pub suit: Suit,

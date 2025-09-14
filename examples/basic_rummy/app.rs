@@ -71,9 +71,9 @@ impl App {
     }
 
     fn setup_game(&mut self) -> Result<(), GameError> {
-        let player_ids = vec![1, 2, 3, 4];
+        let player_ids = vec![1, 2];
         let deck_config = DeckConfig { 
-            shuffle_seed: None, 
+            shuffle_seed: Some(1), 
             pack_count: 1, 
             high_rank: None, 
             wildcard_rank: None 
