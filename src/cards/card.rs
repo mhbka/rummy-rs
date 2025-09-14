@@ -147,3 +147,9 @@ impl Hash for Card {
         (self.suit as u8).hash(state);
     }
 }
+
+impl Display for CardData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.rank.as_str(), self.suit.as_str())
+    }
+}

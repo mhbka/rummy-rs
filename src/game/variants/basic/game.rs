@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use crate::{cards::{card::Card, deck::DeckConfig, suit_rank::Rank}, game::{action::GameAction, error::{ActionError, GameError, GameSetupError}, game::Game, rules::GameRules, state::{GamePhase, GameState}, variants::basic::{config::{BasicConfig, DrawDiscardPileOverride}, rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
 
 /// The basic/standard form of Rummy.
+#[derive(Clone, Debug)]
 pub struct BasicRummyGame {
     state: GameState<BasicScore, BasicRules>,
     rules: BasicRules,
@@ -153,10 +154,12 @@ impl Game for BasicRummyGame {
         if self.state.phase != GamePhase::RoundEnd {
             return Err(GameError::WrongGamePhase);
         }
-        
-        let round_score = self.rules.calculate_round_score(&self.state)?;
-        self.state.round_scores.insert(self.state.current_round, round_score);
 
+        if self.state.current_round != 0 {  
+            let round_score = self.rules.calculate_round_score(&self.state)?;
+            self.state.round_scores.insert(self.state.current_round, round_score);
+        }
+        
         let cards_to_deal = self.rules.cards_to_deal(&self.state);
         let starting_player_index = self.rules.starting_player_index(&self.state);
         self.state.start_new_round(cards_to_deal, starting_player_index)?;

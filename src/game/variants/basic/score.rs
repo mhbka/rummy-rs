@@ -1,7 +1,7 @@
 use crate::{game::score::VariantPlayerScore, player::Player};
 
 /// A single player's score in basic Rummy.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BasicScore {
     score: u32
 }

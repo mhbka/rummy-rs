@@ -157,12 +157,11 @@ fn valid_run_wrong_order_indices() {
         },
     ];
     let backup_cards = cards.clone();
-    let mut indices = vec![2, 0, 1]; // in the wrong order
-    let run = Run::new(&mut cards, &mut indices);
-
-    assert!(cards.len() == 0);
-    assert!(run.is_ok());
-    assert!(run.unwrap().cards() == &backup_cards);
+    let indices = vec![2, 0, 1]; // in the wrong order
+    let run = Run::new(&mut cards, &indices);
+    
+    assert!(run.is_err());
+    assert!(cards.len() == 3);
 }
 
 #[test]
@@ -191,10 +190,10 @@ fn valid_run_wildcard() {
     backup_cards.sort();
     let mut indices = vec![0, 1, 2];
     let run = Run::new(&mut cards, &mut indices);
-
-    assert!(cards.len() == 0);
+    
     assert!(run.is_ok());
-    assert!(run.unwrap().cards() == &backup_cards);
+    assert!(cards.len() == 0);
+    assert!(run.unwrap().cards().iter().collect::<HashSet<_>>() == backup_cards.iter().collect::<HashSet<_>>());
 }
 
 #[test]

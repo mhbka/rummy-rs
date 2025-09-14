@@ -80,6 +80,7 @@ impl From<InternalError> for GameError {
 }
 
 /// Errors while creating a game.
+#[derive(Clone, Debug)]
 pub enum GameSetupError {
     /// The game has too many players.
     TooManyPlayers,

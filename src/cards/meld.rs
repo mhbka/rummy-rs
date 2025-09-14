@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use thiserror::Error;
 use super::{
     card::Card,
@@ -315,11 +317,12 @@ impl Meldable for Run {
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let mut idx = 0;
-        hand_cards.retain(|_| {
-            idx += 1;
-            !indices.contains(&(idx - 1))
-        });
+        let mut sorted_indices = indices.to_vec();
+        sorted_indices.sort();
+        sorted_indices.reverse();
+        for &idx in &sorted_indices {
+            hand_cards.remove(idx);
+        }
 
         let set_suit = cards
             .iter()

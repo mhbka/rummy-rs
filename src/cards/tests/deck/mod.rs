@@ -88,8 +88,11 @@ fn draw_and_discard_deck() {
     assert_eq!(deck.stock().len(), 0);
     assert_eq!(deck.discard_pile().len(), 52);
 
-    // Drawing from an empty stock
-    assert!(deck.draw(1).is_err());
+    // Try drawing from an empty stock
+    assert!(deck.try_draw(1).is_err());
+
+    // Drawing with automated discard turnover
+    assert!(deck.draw(1).is_ok());
 }
 
 #[test]

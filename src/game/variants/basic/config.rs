@@ -1,4 +1,4 @@
-/// Holds configuration values for basic Rummy.
+/// Holds override configuration values for basic Rummy.
 #[derive(Clone, Debug)]
 pub struct BasicConfig {
     /// Overrides the default number of cards to deal at the start of each round.

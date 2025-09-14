@@ -6,7 +6,7 @@ use rummy::{
         error::GameError, 
         game::Game, 
         state::GamePhase, 
-        variants::basic::game::BasicRummyGame
+        variants::basic::{config::BasicConfig, game::BasicRummyGame}
     }
 };
 
@@ -78,7 +78,12 @@ impl App {
             high_rank: None, 
             wildcard_rank: None 
         };
-        let mut game = BasicRummyGame::new(player_ids, deck_config)?;
+        let game_config = BasicConfig {
+            deal_amount: None,
+            draw_deck_amount: None,
+            draw_discard_pile_amount: None,
+        };
+        let mut game = BasicRummyGame::new(player_ids, game_config, deck_config).unwrap();
         game.next_round()?;
         self.game = Some(game);
         self.state = AppState::GamePlay;
@@ -133,7 +138,7 @@ impl App {
         match key {
             KeyCode::Char('1') => {
                 if let Some(ref mut game) = self.game {
-                    let action = GameAction::DrawDeck(DrawDeckAction { count: Some(1) });
+                    let action = GameAction::DrawDeck(DrawDeckAction {});
                     if let Err(e) = game.execute_action(action) {
                         self.error_message = Some(format!("Draw failed: {:?}", e));
                     }

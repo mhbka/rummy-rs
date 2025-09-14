@@ -25,7 +25,7 @@ pub struct DrawDeckAction {}
 /// Represents drawing from the discard pile.
 #[derive(Debug, Clone)]
 pub struct DrawDiscardPileAction {
-    /// For variants that allow taking multiple cards from the discard pile.
+    /// For variants that allow taking a chosen number of cards from the discard pile.
     pub count: Option<u8>,
 }
 
