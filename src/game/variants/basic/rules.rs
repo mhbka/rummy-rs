@@ -20,7 +20,7 @@ impl BasicRules {
         }
         let active_players = state.players
             .iter()
-            .filter(|p| p.active)
+            .filter(|p| p.active || p.joined_in_round == state.current_round)
             .count();
 
         match active_players {

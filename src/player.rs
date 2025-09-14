@@ -3,10 +3,15 @@ use super::cards::{card::Card, meld::Meld};
 /// A Rummy player.
 #[derive(Debug, Clone)]
 pub struct Player {
+    /// How they're identified.
     pub(crate) id: usize,
+    /// Their hand.
     pub(crate) cards: Vec<Card>,
+    /// Their melds.
     pub(crate) melds: Vec<Meld>,
+    /// Whether they're currently playing.
     pub(crate) active: bool,
+    /// The round they joined in.
     pub(crate) joined_in_round: usize,
 }
 

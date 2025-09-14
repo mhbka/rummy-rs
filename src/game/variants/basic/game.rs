@@ -12,7 +12,8 @@ pub struct BasicRummyGame {
 impl BasicRummyGame {
     /// Initialize the Rummy game.
     /// 
-    /// Returns an `Err` if there are too few/too many players.
+    /// Returns an `Err` if there is only 1 player,
+    /// or there aren't enough cards for all players to be dealt + draw from the deck at least once.
     pub fn new(
         player_ids: Vec<usize>, 
         config: BasicConfig, 
@@ -36,16 +37,21 @@ impl BasicRummyGame {
     }
 
     /// Validates setup of the game.
-    /// We can call this when first initializing the game, and before every new round.
+    /// We call this when first initializing the game, and before starting every new round.
     /// 
-    /// At the moment, just checks that we can deal cards to all players and have enough left in the stock for 1 iteration of draws.
+    /// At the moment, this just checks that we can deal cards to all (active) players and have enough left in the stock for 1 iteration of draws.
     fn validate_setup(&self) -> Result<(), GameSetupError> {
-        let deal_amount = self.rules.cards_to_deal(&self.state);
-        let draw_amount = self.rules.cards_to_draw_from_deck(&self.state);
+        // active players are those who are active, or just joined the game
         let active_players = self.state.players
             .iter()
-            .filter(|p| p.active)
+            .filter(|p| p.active || p.joined_in_round == self.state.current_round)
             .count();
+        if active_players < 2 {
+            return Err(GameSetupError::TooFewPlayers);
+        }
+
+        let deal_amount = self.rules.cards_to_deal(&self.state);
+        let draw_amount = self.rules.cards_to_draw_from_deck(&self.state);
 
         let deck_config = self.state.deck.config();
         let mut deck_size = deck_config.pack_count * 52;
@@ -53,7 +59,7 @@ impl BasicRummyGame {
             deck_size += deck_config.pack_count * 2;
         }
 
-        let min_draw_size = (active_players * deal_amount) + (active_players * draw_amount);
+        let min_draw_size = (active_players * deal_amount) + (1 * active_players * draw_amount);
 
         match deck_size < min_draw_size {
             true => Err(GameSetupError::NotEnoughCards),
@@ -154,6 +160,8 @@ impl Game for BasicRummyGame {
         if self.state.phase != GamePhase::RoundEnd {
             return Err(GameError::WrongGamePhase);
         }
+        
+        self.validate_setup()?;
 
         if self.state.current_round != 0 {  
             let round_score = self.rules.calculate_round_score(&self.state)?;

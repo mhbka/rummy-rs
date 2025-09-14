@@ -21,7 +21,8 @@ pub trait Game {
 
     /// Add a player using the given `player_id`.
     /// 
-    /// Returns an `Err` if the maximum number of players has been reached.
+    /// Returns an `Err` if the maximum number of players has been reached,
+    /// or a player with that ID already exists.
     fn add_player(&mut self, player_id: usize) -> Result<(), GameError>;
 
     /// Rearranges the player's cards according to what is present in `new_arrangement`.
@@ -33,6 +34,7 @@ pub trait Game {
 
     /// Calculate and store round scores and start the next round.
     /// 
-    /// Returns an `Err` if the game phase is not `RoundEnd`.
+    /// Returns an `Err` if the game phase is not `RoundEnd`,
+    /// or the setup failed for some reason.
     fn next_round(&mut self) -> Result<(), GameError>;
 }

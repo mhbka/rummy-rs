@@ -1,4 +1,4 @@
-use rummy::{cards::deck::DeckConfig, game::game::Game};
+use rummy::{cards::deck::DeckConfig, game::{error::GameSetupError, game::Game}};
 use crate::common::fixtures::{create_basic_game, create_basic_game_with_config};
 
 #[test]
@@ -34,9 +34,10 @@ fn deal_6_players() {
 }
 
 #[test]
-fn deal_7_players_requires_multiple_decks() {
+fn deal_7_players_requires_two_decks() {
     // Should fail with 1 deck
-    assert!(create_basic_game(7).is_err());
+    let game = create_basic_game(7);
+    assert!(matches!(game, Err(GameSetupError::NotEnoughCards)));
     
     // Should work with 2 decks
     let deck_config = DeckConfig { pack_count: 2, ..Default::default() };
@@ -46,4 +47,11 @@ fn deal_7_players_requires_multiple_decks() {
     for player in &state.players {
         assert_eq!(player.cards().len(), 10);
     }
+}
+
+#[test]
+fn deal_10_players_two_decks_fails() {
+    let deck_config = DeckConfig { pack_count: 2, ..Default::default() };
+    let game = create_basic_game_with_config(10, None, None, Some(deck_config));
+    assert!(matches!(game, Err(GameSetupError::NotEnoughCards)));
 }

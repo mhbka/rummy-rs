@@ -61,14 +61,12 @@ pub enum GameError {
     PlayerDoesntExist,
     /// Tried to add a player with already existing ID.
     AddedPlayerAlreadyExists,
-    /// The game has too many players.
-    TooManyPlayers,
-    /// The game has too few players.
-    TooFewPlayers,
     /// Failed to apply a hand rearrangement, likely due to a mismatch of hand and newly arranged cards.
     FailedHandRearrangement, 
     /// No winner was found for the round.
     RoundHasNoWinner,
+    /// The round setup failed.
+    FailedRoundSetup(GameSetupError),
     /// Some other internal error occurred.
     Internal(InternalError)
 }
@@ -76,6 +74,12 @@ pub enum GameError {
 impl From<InternalError> for GameError {
     fn from(value: InternalError) -> Self {
         Self::Internal(value)
+    }
+}
+
+impl From<GameSetupError> for GameError {
+    fn from(value: GameSetupError) -> Self {
+        Self::FailedRoundSetup(value)
     }
 }
 
