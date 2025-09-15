@@ -16,7 +16,7 @@ fn basic_flow() {
     game.execute_action(GameAction::DrawDeck(DrawDeckAction {})).unwrap();
 
     let cur_player = game.get_state().get_current_player().unwrap();
-    let mut hand = cur_player.cards().clone();
+    let mut hand: Vec<_> = cur_player.cards().iter().map(|c| c.data()).collect();
     hand.sort();
     game.rearrange_player_hand(cur_player.id(), hand).unwrap();
     let indices = vec![1,2,3,4];

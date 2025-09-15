@@ -322,9 +322,11 @@ impl App {
             let current_player = game.get_state()
                 .get_current_player()
                 .unwrap();
-            let mut current_player_hand = current_player
+            let mut current_player_hand: Vec<_> = current_player
                 .cards()
-                .clone();
+                .iter()
+                .map(|c| c.data())
+                .collect();
             current_player_hand.sort();
             game
                 .rearrange_player_hand(current_player.id(), current_player_hand)
