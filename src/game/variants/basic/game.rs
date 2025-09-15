@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::{cards::{card::Card, deck::DeckConfig, suit_rank::Rank}, game::{action::GameAction, error::{ActionError, GameError, GameSetupError}, game::Game, rules::GameRules, state::{GamePhase, GameState}, variants::basic::{config::{BasicConfig, DrawDiscardPileOverride}, rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
+use crate::{cards::{card::{Card, CardData}, deck::DeckConfig, suit_rank::Rank}, game::{action::GameAction, error::{ActionError, GameError, GameSetupError}, game::Game, rules::GameRules, state::{GamePhase, GameState}, variants::basic::{config::{BasicConfig, DrawDiscardPileOverride}, rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
 
 /// The basic/standard form of Rummy.
 #[derive(Clone, Debug)]
@@ -120,7 +120,7 @@ impl Game for BasicRummyGame {
         }
     }
 
-    fn rearrange_player_hand(&mut self, player_id: usize, new_arrangement: Vec<Card>) -> Result<(), GameError> {
+    fn rearrange_player_hand(&mut self, player_id: usize, new_arrangement: Vec<CardData>) -> Result<(), GameError> {
         if self.state.phase != GamePhase::Draw && self.state.phase != GamePhase::Play {
             return Err(GameError::WrongGamePhase);
         }
@@ -130,20 +130,33 @@ impl Game for BasicRummyGame {
             .find(|p| p.id == player_id)
         {
             Some(player) => {
+                // check that player has cards in hand
+                if player.cards.len() == 0 {
+                    return Err(GameError::FailedHandRearrangement);
+                }
+                let deck_config = player.cards[0].deck_config();
+
                 // check that player's hand and `new_arrangement` contain same cards
                 let mut count = HashMap::new();
                 for card in &player.cards {
-                    *count.entry(card).or_insert(0) += 1;
+                    *count.entry(card.data()).or_insert(0) += 1;
                 }
                 for card in &new_arrangement {
-                    let entry = count.entry(card).or_insert(0);
+                    let entry = count.entry(*card).or_insert(0);
                     *entry -= 1;
                     if *entry == 0 {
                         count.remove(card);
                     }
                 }
                 if count.is_empty() {
-                    player.cards = new_arrangement;
+                    player.cards = new_arrangement
+                        .into_iter()
+                        .map(|c| Card {
+                            rank: c.rank,
+                            suit: c.suit,
+                            deck_config: deck_config.clone()
+                        })
+                        .collect();
                     Ok(())
                 }
                 else {

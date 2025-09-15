@@ -1,3 +1,15 @@
+use crate::cards::card::CardData;
+
+/// The possible interactions with a `Game`.
+#[derive(Clone, Debug)]
+pub enum GameInteractions {
+    Action(GameAction),
+    PlayerJoin { player_id: usize },
+    PlayerQuit { player_id: usize },
+    HandRearrangement { player_id: usize, new_arrangement: Vec<CardData> },
+}
+
+
 /// The possible actions taken in a Rummy game.
 /// 
 /// Each action aims to include all possible data required by any (mainstream) Rummy variant.

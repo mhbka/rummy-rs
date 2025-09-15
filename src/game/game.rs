@@ -2,7 +2,7 @@ use super::action::*;
 use crate::{cards::card::{Card, CardData}, game::{error::{ActionError, GameError}, rules::GameRules, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState, VariantState}}};
 
 /// Represents a Rummy game.
-pub trait Game {
+pub trait Game where Self: Sized + Clone {
     /// The `GameRules` that this game follows.
     type Rules: GameRules;
 
@@ -30,7 +30,7 @@ pub trait Game {
     /// Returns an `Err` if such player doesn't exist, 
     /// `new_arrangement` doesn't contain the exact cards currently in that player's hand,
     /// or the game phase isn't `Draw` or `Play`.
-    fn rearrange_player_hand(&mut self, player_id: usize, new_arrangement: Vec<Card>) -> Result<(), GameError>;
+    fn rearrange_player_hand(&mut self, player_id: usize, new_arrangement: Vec<CardData>) -> Result<(), GameError>;
 
     /// Calculate and store round scores and start the next round.
     /// 
