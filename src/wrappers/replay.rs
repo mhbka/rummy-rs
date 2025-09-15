@@ -32,14 +32,7 @@ impl<G: Game> ReplayState<G> {
                     if !action.successful && self.skip_failed_actions {
                         continue;
                     } else {
-                        if action.successful {
-                            match action.entry.clone() {
-                                GameInteractions::Action(game_action) => {self.replaying_game.execute_action(game_action);},
-                                GameInteractions::PlayerJoin { player_id } => {self.replaying_game.add_player(player_id);},
-                                GameInteractions::PlayerQuit { player_id } => {self.replaying_game.quit_player(player_id);},
-                                GameInteractions::HandRearrangement { player_id, new_arrangement } => {self.replaying_game.rearrange_player_hand(player_id, new_arrangement);},
-                            };
-                        }
+                        Self::apply_action(&mut self.replaying_game, action);
                         return Some(action);
                     }
                 },  
@@ -60,8 +53,53 @@ impl<G: Game> ReplayState<G> {
     }
 
     /// Reverses the previous action(s) and returns it.
-    fn previous(&mut self) -> Option<&HistoryEntry> {
-        // TODO: build up previous gamestate from initial game of the round
+    fn previous(&mut self) {
+        if self.round == 0 {
+            return;
+        }
+
+        let round_history;
+        if self.action == 0 {
+            self.round -= 1;
+            round_history = self.game
+                .get_histories()
+                .get(&self.round)
+                .expect("The previous round in a History should always exist");
+            self.action = round_history.len() - 1;
+            self.replaying_game = self.game
+                .get_initial_round_states()
+                .get(&self.round)
+                .expect("The previous round in a History should always exist")
+                .clone();
+        }
+        else {
+            self.action -= 1;
+            round_history = self.game
+                .get_histories()
+                .get(&self.round)
+                .expect("The current round in a History should always exist");
+            self.replaying_game = self.game
+                .get_initial_round_states()
+                .get(&self.round)
+                .expect("The current round in a History should always exist")
+                .clone();
+        }
+
+        for i in 0..=self.action {
+            Self::apply_action(&mut self.replaying_game, &round_history[i]);
+        }
+    }
+
+    // Convenience function for applying an action to a game.
+    fn apply_action(game: &mut G, action: &HistoryEntry) {
+        if action.successful {
+            match action.entry.clone() {
+                GameInteractions::Action(game_action) => {game.execute_action(game_action);},
+                GameInteractions::PlayerJoin { player_id } => {game.add_player(player_id);},
+                GameInteractions::PlayerQuit { player_id } => {game.quit_player(player_id);},
+                GameInteractions::HandRearrangement { player_id, new_arrangement } => {game.rearrange_player_hand(player_id, new_arrangement);},
+            };
+        }
     }
 }
 
@@ -128,10 +166,8 @@ impl<G: Game> Replay<G> {
 
     /// The exact opposite effect of `next`. Reverses the previous action and returns that action.
     /// 
-    /// If `skip_failed_actions`, skips any previous failed actions till a successful action is found.
-    /// 
-    /// If we've reached round 0, returns `None`.
-    fn previous(&mut self) -> Option<&HistoryEntry> {
+    /// If `skip_failed_actions`, reverses all the way till the previous successful action.
+    fn previous(&mut self) {
         self.replay_state.previous()
     }
 }
