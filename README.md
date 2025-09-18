@@ -1,12 +1,10 @@
 # rummy
 `rummy` is a Rust crate for running Rummy games. 
 It supports:
-- **Deck configuration**: Configure the number of packs to put in the deck, a set shuffle seed for deterministic shuffling, wildcards (including Jokers), and even high cards (ever wanted `Ten` to be the high rank instead of `King`?) 
+- **Deck configuration**: Configure the pack count, shuffle seed, wildcards, and even high cards (ever wanted `Ten` to be the high rank instead of `King`?) 
 - **Game configuration**: Override the default amount of cards to draw from the deck or discard pile, or the number of cards to discard on each turn.
 - **History and replay**: Comes with `History` and `Replay` wrappers, allowing you to view all the actions of the game and even replay the game step-by-step.
 - **Extensibility**: With the core *Game*, *GameRules*, *GameState* and *GameScore* traits, one can implement their own variant of Rummy.
-
-The crate's design 
 
 ## Basic usage
 ```rust
@@ -99,14 +97,14 @@ game_with_replay.previous();
 ```
 
 ## Examples
-A `basic_rummy` example has been included, where you can play basic Rummy in a neat little terminal GUI (kudos to `ratatui`!).
+A `basic_rummy` example has been included, where you can play basic Rummy in a neat little terminal GUI (thanks to `ratatui`!).
 To play it, just run:
 ```Powershell
 cargo run --example basic_rummy
 ```
 
 ## Progress
-While this crate is still a work-in-progress, the intention is to (as much as possible) only extend the API, not remove from this. 
+While this crate is still a work-in-progress, the intention is to (as much as possible) only extend the API. 
 These are the currently planned additions:
 
 ### Variants
