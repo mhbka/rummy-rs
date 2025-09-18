@@ -2,7 +2,6 @@ use super::{
     deck::DeckConfig,
     suit_rank::{Rank, Suit},
 };
-use serde::{Deserialize, Serialize};
 use std::{
     cmp::Ordering,
     fmt::{Debug, Display},
@@ -11,7 +10,8 @@ use std::{
 };
 
 /// The data of a card.
-#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CardData {
     pub rank: Rank,
     pub suit: Suit,
@@ -19,7 +19,7 @@ pub struct CardData {
 
 /// A card.
 /// 
-/// This contains an `Arc` to the deck's `DeckConfig`, used for calculating orders when taking
+/// This contains an `Arc` to the deck's `DeckConfig`, used for calculating ordering when taking
 /// into account custom high ranks, amongst other things.
 /// 
 /// This means this isn't (de)serializable. For that, use `CardData`.

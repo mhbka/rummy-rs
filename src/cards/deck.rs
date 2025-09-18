@@ -4,7 +4,6 @@ use crate::cards::card::CardData;
 use super::card::Card;
 use super::suit_rank::{Rank, Suit};
 use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use strum::IntoEnumIterator;
 
 /// Configurable values for a deck's behaviour.
@@ -27,7 +26,8 @@ use strum::IntoEnumIterator;
 /// ### `wildcard_rank`
 /// Optional rank to denote as the wildcard (typically the Joker).
 /// The default is to have no wildcards.
-#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DeckConfig {
     pub shuffle_seed: Option<u64>,
     pub pack_count: usize,
@@ -236,7 +236,7 @@ impl Deck {
 }
 
 /// Used solely for (de)serialization purposes.
-#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 struct SerializableDeck {
     pub config: DeckConfig,
     pub stock: Vec<CardData>,
@@ -244,7 +244,8 @@ struct SerializableDeck {
 }
 
 // We serialize to `SerializableDeck`...
-impl Serialize for Deck {
+#[cfg(feature = "serde")]
+impl serde::Serialize for Deck {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -259,7 +260,8 @@ impl Serialize for Deck {
 }
 
 // And from it!
-impl<'de> Deserialize<'de> for Deck {
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for Deck {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
