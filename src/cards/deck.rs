@@ -27,7 +27,7 @@ use strum::IntoEnumIterator;
 /// ### `wildcard_rank`
 /// Optional rank to denote as the wildcard (typically the Joker).
 /// The default is to have no wildcards.
-#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DeckConfig {
     pub shuffle_seed: Option<u64>,
     pub pack_count: usize,
@@ -53,7 +53,7 @@ impl DeckConfig {
 /// - **config**, dictating shuffling, pack counts, wildcards etc.
 /// - **stock**, face-down cards that can be drawn at the start of each turn
 /// - **discard pile**, discarded cards, which can also be drawn
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Deck {
     config: Arc<DeckConfig>,
     stock: Vec<Card>,

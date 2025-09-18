@@ -1,7 +1,7 @@
 use super::cards::{card::Card, meld::Meld};
 
 /// A Rummy player.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Player {
     /// How they're identified.
     pub(crate) id: usize,

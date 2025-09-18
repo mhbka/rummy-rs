@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use crate::{cards::meld::{Meld, Meldable}, game::{action::*, error::{ActionError, FailedActionError, GameError, InternalError}, rules::GameRules, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState}, variants::basic::{config::{BasicConfig, DrawDiscardPileOverride}, game::BasicRummyGame, score::BasicScore, state::BasicState}}};
 
 /// The rules for basic Rummy.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BasicRules {
     config: BasicConfig
 }

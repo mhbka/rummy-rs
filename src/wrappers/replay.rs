@@ -16,17 +16,30 @@ pub struct ReplayState<G: Game> {
 }
 
 impl<G: Game> ReplayState<G> {
+    /// Initialize the state.
+    fn new(game: History<G>, skip_failed_actions: bool) -> Self {
+        let replaying_game = game
+            .get_initial_round_states()
+            .get(&0)
+            .expect("History should always contain an (empty) initial round state + history for round 0")
+            .clone();
+        ReplayState {
+            game,
+            replaying_game,
+            round: 0,
+            action: 0,
+            skip_failed_actions
+        }
+    }
+
     /// Applies the next action(s) and returns it.
     fn next(&mut self) -> Option<&HistoryEntry> {
-        // UNWRAP: history and initial round state should always exist for the current round
-        let history = self.game
-            .get_histories()
-            .get(&self.round)
-            .unwrap();
-
-        // loop to progress through empty/finished rounds, and (if enabled) failed actions
         loop {
-            match history.get(self.action + 1) {
+            let history = self.game
+                .get_histories()
+                .get(&self.round)
+                .expect("history should always exist for the current round");
+            match history.get(self.action) {
                 Some(action) => {
                     self.action += 1;
                     if !action.successful && self.skip_failed_actions {
@@ -37,15 +50,18 @@ impl<G: Game> ReplayState<G> {
                     }
                 },  
                 None => {
-                    if self.game
-                        .get_histories()
+                    match self.game
+                        .get_initial_round_states()
                         .get(&(self.round + 1))
-                        .is_none()
                     {
-                        return None;
-                    } else {
-                        self.round += 1;
-                        self.action = 0;
+                        Some(game) => {
+                            self.replaying_game = game.clone();
+                            self.round += 1;
+                            self.action = 0;
+                        },
+                        None => {
+                            return None;
+                        }
                     }
                 }
             }
@@ -94,10 +110,10 @@ impl<G: Game> ReplayState<G> {
     fn apply_action(game: &mut G, action: &HistoryEntry) {
         if action.successful {
             match action.entry.clone() {
-                GameInteractions::Action(game_action) => {game.execute_action(game_action);},
-                GameInteractions::PlayerJoin { player_id } => {game.add_player(player_id);},
-                GameInteractions::PlayerQuit { player_id } => {game.quit_player(player_id);},
-                GameInteractions::HandRearrangement { player_id, new_arrangement } => {game.rearrange_player_hand(player_id, new_arrangement);},
+                GameInteractions::Action(game_action) => {game.execute_action(game_action).unwrap();},
+                GameInteractions::PlayerJoin { player_id } => {game.add_player(player_id).unwrap();},
+                GameInteractions::PlayerQuit { player_id } => {game.quit_player(player_id).unwrap();},
+                GameInteractions::HandRearrangement { player_id, new_arrangement } => {game.rearrange_player_hand(player_id, new_arrangement).unwrap();},
             };
         }
     }
@@ -107,7 +123,10 @@ impl<G: Game> ReplayState<G> {
 /// 
 /// This uses a `History` to reconstruct the game.
 /// 
-/// ## Note on performance
+/// ## Important note on usage
+/// 
+/// 
+/// ## Performance
 /// The current replaying state of the game is stored, so applying the next action in the history
 /// is simple. 
 /// 
@@ -124,20 +143,8 @@ impl<G: Game> Replay<G> {
     /// 
     /// If you want to skip unsuccessful/failed actions during replay, set `skip_failed_actions` to true.
     pub fn new(game: History<G>, skip_failed_actions: bool) -> Self {
-        let replaying_game = game
-            .get_initial_round_states()
-            .get(&0)
-            .expect("`History` should always contain an (empty) initial round state + history for round 0")
-            .clone();
-        let replay_state = ReplayState {
-            game,
-            replaying_game,
-            round: 0,
-            action: 0,
-            skip_failed_actions
-        };
         Self {
-            replay_state
+            replay_state: ReplayState::new(game, skip_failed_actions)
         }
     }
 
@@ -159,14 +166,14 @@ impl<G: Game> Replay<G> {
     /// If `skip_failed_actions`, skips any failed actions till a successful action is found.
     /// 
     /// If there are no rounds left, returns `None`.
-    fn next(&mut self) -> Option<&HistoryEntry> {
+    pub fn next(&mut self) -> Option<&HistoryEntry> {
         self.replay_state.next()
     }
 
     /// The exact opposite effect of `next`. Reverses the previous action and returns that action.
     /// 
     /// If `skip_failed_actions`, reverses all the way till the previous successful action.
-    fn previous(&mut self) {
+    pub fn previous(&mut self) {
         self.replay_state.previous()
     }
 }

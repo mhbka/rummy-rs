@@ -3,7 +3,7 @@
 It supports:
 - **Deck configuration**: Configure the pack count, shuffle seed, wildcards, and even high cards (ever wanted `Ten` to be the high rank instead of `King`?) 
 - **Game configuration**: Override the default amount of cards to draw from the deck or discard pile, or the number of cards to discard on each turn.
-- **History and replay**: Comes with `History` and `Replay` wrappers, allowing you to view all the actions of the game and even replay the game step-by-step.
+- **Wrappers**: Comes with `History` and `Replay` wrappers, allowing you to view all the actions of the game and even replay the game step-by-step.
 - **Extensibility**: With the core *Game*, *GameRules*, *GameState* and *GameScore* traits, one can implement their own variant of Rummy.
 
 ## Basic usage
@@ -97,7 +97,7 @@ game_with_replay.previous();
 ```
 
 ## Examples
-A `basic_rummy` example has been included, where you can play basic Rummy in a neat little terminal GUI (thanks to `ratatui`!).
+A `basic_rummy` example has been included, where you can play basic Rummy in a neat terminal GUI (thanks to `ratatui`!).
 To play it, just run:
 ```Powershell
 cargo run --example basic_rummy

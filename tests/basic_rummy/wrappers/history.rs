@@ -9,12 +9,14 @@ fn history_is_correct() {
     // draw from deck
     game.execute_action(GameAction::DrawDeck(DrawDeckAction {})).unwrap();
 
-    // form a meld
+    // rearrange hand
     let cur_player = game.get_state().get_current_player().unwrap();
     let mut hand: Vec<_> = cur_player.cards().iter().map(|c| c.data()).collect();
     hand.sort();
     let rearranging_hand_player_id = cur_player.id();
     game.rearrange_player_hand(rearranging_hand_player_id, hand.clone()).unwrap();
+
+    // form meld
     let indices = vec![1,2,3,4];
     game.execute_action(GameAction::FormMeld(FormMeldAction { card_indices: indices.clone() })).unwrap(); 
 

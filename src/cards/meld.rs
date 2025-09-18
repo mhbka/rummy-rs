@@ -36,7 +36,7 @@ pub trait Meldable: Sized {
 /// There are 2 types:
 /// - **Set**; >=3 cards of the same rank
 /// - **Run**; >=3 sequential cards of the same suit
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Meld {
     Set(Set),
     Run(Run),
@@ -154,7 +154,7 @@ impl Meldable for Meld {
 }
 
 /// A Rummy meld set.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Set {
     cards: Vec<Card>,
     set_rank: Rank,
@@ -287,7 +287,7 @@ impl Meldable for Set {
 }
 
 /// A Rummy meld run.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Run {
     cards: Vec<Card>,
     set_suit: Suit,

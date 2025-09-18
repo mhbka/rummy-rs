@@ -2,7 +2,7 @@ use super::action::*;
 use crate::{cards::card::Card, game::{error::{ActionError, GameError}, game::Game, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState, VariantState}}};
 
 /// Represents the "rule engine" of a Rummy game, handling action execution and score calculation.
-pub trait GameRules where Self: Sized {
+pub trait GameRules where Self: Sized + PartialEq {
     /// The state that this variant requires.
     type VariantState: VariantState<Self::VariantScore, Self>;
     /// The score type of this variant (for each player).

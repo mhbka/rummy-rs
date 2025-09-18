@@ -8,7 +8,7 @@ use crate::{cards::deck::{Deck, DeckConfig}, game::{action::GameAction, error::{
 /// ## Note
 /// Ensure that mutable references to this are not handed outside of the `Game`.
 /// Accidental wrong mutation of the state will probably lead to an invalid gamestate.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GameState<P: VariantPlayerScore, R: GameRules<VariantScore = P>>   {
     pub phase: GamePhase,
     pub players: Vec<Player>,
@@ -145,7 +145,7 @@ pub trait VariantState<P: VariantPlayerScore, R: GameRules<VariantState = Self, 
 }
 
 /// The phases of a Rummy game.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum GamePhase {
     Draw,
     Play,

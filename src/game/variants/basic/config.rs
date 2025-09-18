@@ -1,5 +1,5 @@
 /// Holds override configuration values for basic Rummy.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BasicConfig {
     /// Overrides the default number of cards to deal at the start of each round.
     pub deal_amount: Option<usize>,
@@ -10,7 +10,7 @@ pub struct BasicConfig {
 }
 
 /// The type of discard pile draw behaviour.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DrawDiscardPileOverride {
     /// The player can choose how many cards they wish to draw from the discard pile.
     PlayerChooses,
