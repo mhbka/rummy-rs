@@ -5,3 +5,4 @@ pub mod player_ops;
 pub mod drawing;
 pub mod hand_rearrangement;
 pub mod form_meld;
+pub mod wrappers;
