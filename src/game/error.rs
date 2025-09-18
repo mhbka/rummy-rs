@@ -1,97 +1,75 @@
+use thiserror::Error;
+
 use crate::{cards::meld::MeldError, game::state::GamePhase};
 
 /// Errors that may be returned from executing a `GameAction`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Error)]
 pub enum ActionError {
     /// The action failed to execute.
-    FailedAction(FailedActionError),
+    #[error("{0}")]
+    FailedAction(#[from] FailedActionError),
     /// Serious; indicates something went wrong internally, such as an unexpected invalid state.
     /// May need to stop the game.
-    Internal(InternalError)
-}
-
-impl From<FailedActionError> for ActionError {
-    fn from(value: FailedActionError) -> Self {
-        Self::FailedAction(value)
-    }
-}
-
-impl From<InternalError> for ActionError {
-    fn from(value: InternalError) -> Self {
-        Self::Internal(value)
-    }
+    #[error("{0}")]
+    Internal(#[from] InternalError)
 }
 
 /// Reasons that a `GameAction` couldn't be executed.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Error)]
 pub enum FailedActionError {
-    /// The action was executed in the wrong game state.
+    #[error("The action was executed in the wrong game state: {current_phase:?}")]
     InvalidGamePhase { current_phase: GamePhase },
-    /// Couldn't draw from the discard pile as it had no/not enough cards.
+    #[error("Couldn't draw from the discard pile as it had no/not enough cards")]
     DiscardPileTooSmall,
-    /// The index for a card was invalid (likely out of bounds).
+    #[error("The index for a card was invalid (likely out of bounds)")]
     InvalidCardIndex,
-    /// The index for a meld was invalid (likely out of bounds).
+    #[error("The index for a meld was invalid (likely out of bounds)")]
     InvalidMeldIndex,
-    /// The index for a player was invalid/doesn't exist.
+    #[error("The index for a player was invalid/doesn't exist")]
     InvalidPlayerIndex,
-    /// A meld layoff/formation failed.
-    FailedMeld(MeldError)
+    #[error("A meld layoff/formation failed")]
+    FailedMeld(#[from] MeldError),
 }
 
 /// Internal errors encountered during the game.
 /// 
 /// This possibly indicate invalid internal state; as a result, the game may need to be terminated.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Error)]
 pub enum InternalError {
-    /// There are no/not enough cards left in deck and discard pile to draw the required amount.
+    #[error("There are no/not enough cards left in deck and discard pile to draw the required amount")]
     NoCardsInDeckOrDiscardPile,
-    /// The current player index is invalid.
-    InvalidCurrentPlayer { current: usize }
+    #[error("The current player index is invalid")]
+    InvalidCurrentPlayer { current: usize },
+    #[error("The round has no winner despite having already ended")]
+    RoundHasNoWinner
 }
 
 /// Errors pertaining to the game itself.
 /// 
 /// This doesn't indicate any issues with internal state, but rather that some function was called at the "wrong" time.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Error)]
 pub enum GameError {
-    /// Attempted to perform some action in the wrong game phase.
+    #[error("Attempted to perform some action in the wrong game phase")]
     WrongGamePhase,
-    /// Tried to reference a player ID which doesn't exist.
+    #[error("Tried to reference a player ID which doesn't exist")]
     PlayerDoesntExist,
-    /// Tried to add a player with already existing ID.
+    #[error("Tried to add a player ID when it already exists")]
     AddedPlayerAlreadyExists,
-    /// Failed to apply a hand rearrangement, likely due to a mismatch of hand and newly arranged cards.
+    #[error("Failed to rearrange the hand")]
     FailedHandRearrangement, 
-    /// No winner was found for the round.
-    RoundHasNoWinner,
-    /// The round setup failed.
-    FailedRoundSetup(GameSetupError),
-    /// Some other internal error occurred.
-    Internal(InternalError)
-}
-
-impl From<InternalError> for GameError {
-    fn from(value: InternalError) -> Self {
-        Self::Internal(value)
-    }
-}
-
-impl From<GameSetupError> for GameError {
-    fn from(value: GameSetupError) -> Self {
-        Self::FailedRoundSetup(value)
-    }
+    #[error("The round setup failed: {0}")]
+    FailedRoundSetup(#[from] GameSetupError),
+    #[error("An internal error occurred {0}")]
+    Internal(#[from] InternalError)
 }
 
 /// Errors while creating a game.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Error)]
 pub enum GameSetupError {
-    /// The game has too many players.
+    #[error("The game has too many players")]
     TooManyPlayers,
-    /// The game has too few players.
+    #[error("The game has too few players")]
     TooFewPlayers,
-    /// The deck doesn't have enough cards for the number of players.
-    /// 
-    /// **NOTE**: We interpret enough as enough for all players to be dealt + draw from the deck at least once.
+    #[error("The deck doesn't have enough cards for the number of players (enough meaning all players can be dealt + draw from deck once)")]
     NotEnoughCards
 }

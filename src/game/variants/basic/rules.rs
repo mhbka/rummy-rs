@@ -205,7 +205,7 @@ impl GameRules for BasicRules {
         let winner_id = *player_scores
             .iter()
             .find(|(_, score)| score.score_value() == 0)
-            .ok_or(GameError::RoundHasNoWinner)?
+            .ok_or(InternalError::RoundHasNoWinner)?
             .0;
         let round_score = RoundScore {
             player_scores,

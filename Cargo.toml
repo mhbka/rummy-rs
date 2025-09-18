@@ -13,12 +13,12 @@ keywords = ["card", "game", "poker"]
 
 [dependencies]
 chrono = "0.4.42"
-crossterm = "0.29.0"
 rand = { version = "0.8.5", features = ["std_rng"] }
-ratatui = "0.29.0"
 serde =  { version = "1.0.203", features = ["derive"] }
 strum = { version = "0.26.2", features = ["derive"] }
 thiserror = "2.0.15"
 
 [dev-dependencies]
 rprompt = "2.1.1"
+ratatui = "0.29.0"
+crossterm = "0.29.0"
