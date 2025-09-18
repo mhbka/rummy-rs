@@ -1,58 +1,128 @@
 # rummy
-This crate models the card game Rummy. It supports configuration and different popular variants (WIP).
+`rummy` is a Rust crate for running Rummy games. 
+It supports:
+- **Deck configuration**: Configure the number of packs to put in the deck, a set shuffle seed for deterministic shuffling, wildcards (including Jokers), and even high cards (ever wanted `Ten` to be the high rank instead of `King`?) 
+- **Game configuration**: Override the default amount of cards to draw from the deck or discard pile, or the number of cards to discard on each turn.
+- **History and replay**: Comes with `History` and `Replay` wrappers, allowing you to view all the actions of the game and even replay the game step-by-step.
+- **Extensibility**: With the core *Game*, *GameRules*, *GameState* and *GameScore* traits, one can implement their own variant of Rummy.
 
-**NOTE: this crate is in early development; expect nothing to stay stable.**
+The crate's design 
 
-## Use
-
-### Modules
-A typical import of this crate will look like this:
-```rust 
-use rummy::game::{
-    actions::{
-        AllActions, DiscardActions, DrawActions, PlayActions, PlayableActions, RoundEndActions,
-        TransitionResult,
-    },
-    phases::{DiscardPhase, DrawPhase, GamePhase, PlayPhase, PlayablePhase, RoundEndPhase},
-    state::{Score, State},
-    variants::standard::{StandardRummy, StandardRummyGame},
+## Basic usage
+```rust
+use rummy::{
+    cards::deck::DeckConfig, 
+    game::{error::GameSetupError, variants::basic::{config::BasicConfig, game::BasicRummyGame}}, 
+    wrappers::{history::History, replay::Replay}
 };
+
+fn main() {
+    // Create a basic Rummy game with 4 players and default configuration 
+    let player_ids: Vec<usize> = vec![1, 2, 3, 4];
+    let deck_config = DeckConfig {
+        shuffle_seed: None,
+        pack_count: 1,
+        high_rank: None,
+        wildcard_rank: None
+    };
+    let game_config = BasicConfig {
+        deal_amount: None,
+        draw_deck_amount: None,
+        draw_discard_pile_amount: None
+    };
+    let mut game = BasicRummyGame::new(player_ids, game_config, deck_config).unwrap();
+
+    // Advance to the next round (the game starts at round 0)
+    game.next_round().unwrap();
+
+    // Current player draws a card from the deck...
+    game.execute_action(GameAction::DrawDeck(DrawDeckAction {})).unwrap();
+    
+    // ... then discards the 3rd card from their hand
+    game.execute_action(GameAction::Discard(DiscardAction { card_index: 2, declare_going_out: None })).unwrap();
+
+    // Inspect the game state
+    let state = game.get_state();
+
+    // Add a player with ID 5 (they'll only start playing the next round)
+    game.add_player(5).unwrap();
+
+    // Or quit the player with ID 3
+    game.quit_player(3).unwrap();
+}
 ```
 
-A breakdown of the modules:
-- **actions**: Traits that split up possible actions for each phase of a Rummy game.
-- **phases**: Different phases of a Rummy game; used as state for the game's typestate.
-- **state**: State of a Rummy game, common across all variants.
-- **variants**: The game itself; contains different variants of Rummy.
-
-### Starting a game
+## Wrappers
+### History
+This allows you to record and view the complete history of all interactions with the game:
 ```rust
-// initialize a list of player IDs
-let player_ids = vec![1, 2, 3, 4];
+// Create a basic Rummy game with history
+let player_ids: Vec<usize> = vec![1, 2, 3, 4];
+let deck_config = DeckConfig {
+    shuffle_seed: None,
+    pack_count: 1,
+    high_rank: None,
+    wildcard_rank: None
+};
+let game_config = BasicConfig {
+    deal_amount: None,
+    draw_deck_amount: None,
+    draw_discard_pile_amount: None
+};
+let mut game = History::new(player_ids, game_config, deck_config).unwrap();
 
-// pass it into a variant's `quickstart`
-let game = StandardRummyGame::quickstart(player_ids); 
+// play the game as usual...
 
-// we initialize at round 0 in `RoundEndPhase`, so we must advance to the next round
-let game = game.to_next_round();
+// Get the history of interactions for round 1
+let round_history = game
+    .get_histories()
+    .get(&1)
+    .unwrap();
 ```
 
-Alternatively, you can configure the game by setting a config:
+### Replay
+Going a step further, you can replay a game (including undo/redo), and inspect its state after each action:
 ```rust
-// the config struct for standard Rummy
-let game_config = StandardRummyConfig { /* ... */ };
+// say you already have a `History<BasicRummyGame>`...
+let mut game_with_replay = Replay::new(game, false);
 
-// and for the deck itself
-let deck_config = DeckConfig { /* ... */ };
+// Replay maintains an internal "replaying game" which starts at round 0;
+// we call `next()` to advance with the game's history of actions,
+// which returns an `Option` with the just-executed action.
+let action = game_with_replay.next().unwrap();
 
-// we pass both into the variant's `new`
-let game = StandardRummyGame::quickstart(player_ids, game_config, deck_config); 
+// We can also check the state of the replaying game
+let replaying_state = game_with_replay.get_replaying_game().get_state(); 
+
+// If we want, we can also go backwards!
+game_with_replay.previous();
 ```
 
-### Transitions
-Certain actions, such as forming melds, can result in immediate transitions to a different gamephase. Calling these functions consumes the game and returns a `TransitionResult`.
+## Examples
+A `basic_rummy` example has been included, where you can play basic Rummy in a neat little terminal GUI (kudos to `ratatui`!).
+To play it, just run:
+```Powershell
+cargo run --example basic_rummy
+```
 
-WIP
+## Progress
+While this crate is still a work-in-progress, the intention is to (as much as possible) only extend the API, not remove from this. 
+These are the currently planned additions:
 
-## Example
-Use `cargo run --examples rummy` to run a command-line implementation of this crate.
+### Variants
+- [ ] Gin Rummy
+- [ ] 500 Rum 
+- [ ] Canasta
+- [ ] Indian Rummy
+
+### Wrappers
+- [ ] Possible Plays - A wrapper that can return the possible plays (meld/layoffs etc) the current player can take
+
+### Others
+- [ ] Recorded game testing + harness - Record some known valid games and implement a harness to run them in tests
+- [ ] Bot player - A purely algorithmic bot player with configurable difficulty
+
+Any help with contributing towards these (or with your own ideas) is always welcome!
+
+## License
+Licensed under the [MIT license](http://opensource.org/licenses/MIT).

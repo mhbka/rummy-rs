@@ -124,11 +124,10 @@ impl<G: Game> Replay<G> {
     /// 
     /// If you want to skip unsuccessful/failed actions during replay, set `skip_failed_actions` to true.
     pub fn new(game: History<G>, skip_failed_actions: bool) -> Self {
-        // UNWRAP: fine as long as `History` is always constructed with (empty) round state + history for round 0
         let replaying_game = game
             .get_initial_round_states()
             .get(&0)
-            .unwrap()
+            .expect("`History` should always contain an (empty) initial round state + history for round 0")
             .clone();
         let replay_state = ReplayState {
             game,

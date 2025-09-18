@@ -1,3 +1,3 @@
-pub mod allowed_actions;
+pub mod possible_plays;
 pub mod history;
 pub mod replay;
