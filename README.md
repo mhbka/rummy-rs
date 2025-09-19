@@ -3,8 +3,8 @@
 It supports:
 - **Deck configuration**: Configure the pack count, shuffle seed, wildcards, and even high cards (ever wanted `Ten` to be the high rank instead of `King`?) 
 - **Game configuration**: Override the default amount of cards to draw from the deck or discard pile, or the number of cards to discard on each turn.
-- **Wrappers**: Comes with `History` and `Replay` wrappers, allowing you to view all the actions of the game and even replay the game step-by-step.
-- **Extensibility**: With the core *Game*, *GameRules*, *GameState* and *GameScore* traits, one can implement their own variant of Rummy.
+- **Useful wrappers**: Comes with `History` and `Replay` wrappers, allowing you to view all the actions of the game and even replay the game step-by-step.
+- **Serializable**: With the `serde` feature, you can (de)serialize games, allowing you to store them with ease!
 
 ## Basic usage
 ```rust
