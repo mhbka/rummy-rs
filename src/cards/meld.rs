@@ -37,7 +37,6 @@ pub trait Meldable: Sized {
 /// - **Set**; >=3 cards of the same rank
 /// - **Run**; >=3 sequential cards of the same suit
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Meld {
     Set(Set),
     Run(Run),
@@ -156,10 +155,9 @@ impl Meldable for Meld {
 
 /// A Rummy meld set.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Set {
-    cards: Vec<Card>,
-    set_rank: Rank,
+    pub(crate) cards: Vec<Card>,
+    pub(crate) set_rank: Rank,
 }
 
 impl Set {
@@ -290,10 +288,9 @@ impl Meldable for Set {
 
 /// A Rummy meld run.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Run {
-    cards: Vec<Card>,
-    set_suit: Suit,
+    pub(crate) cards: Vec<Card>,
+    pub(crate) set_suit: Suit,
 }
 
 impl Run {

@@ -55,9 +55,9 @@ impl DeckConfig {
 /// - **discard pile**, discarded cards, which can also be drawn
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Deck {
-    config: Arc<DeckConfig>,
-    stock: Vec<Card>,
-    discard_pile: Vec<Card>,
+    pub(crate) config: Arc<DeckConfig>,
+    pub(crate) stock: Vec<Card>,
+    pub(crate) discard_pile: Vec<Card>,
 }
 
 impl Deck {
@@ -232,56 +232,5 @@ impl Deck {
             }
             None => stock.shuffle(&mut rand::thread_rng()),
         }
-    }
-}
-
-/// Used solely for (de)serialization purposes.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-struct SerializableDeck {
-    pub config: DeckConfig,
-    pub stock: Vec<CardData>,
-    pub discard_pile: Vec<CardData>,
-}
-
-// We serialize to `SerializableDeck`...
-#[cfg(feature = "serde")]
-impl serde::Serialize for Deck {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let deck_data = SerializableDeck {
-            config: (*self.config).clone(), 
-            stock: self.stock.iter().map(|card| card.data()).collect(),
-            discard_pile: self.discard_pile.iter().map(|card| card.data()).collect(),
-        };
-        deck_data.serialize(serializer)
-    }
-}
-
-// And from it!
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for Deck {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let deck_data = SerializableDeck::deserialize(deserializer)?;
-        let config = Arc::new(deck_data.config);
-        
-        let make_card = |card_data: CardData| Card {
-            rank: card_data.rank,
-            suit: card_data.suit,
-            deck_config: Arc::clone(&config),
-        };
-
-        let stock = deck_data.stock.into_iter().map(make_card).collect(); 
-        let discard_pile = deck_data.discard_pile.into_iter().map(make_card).collect();
-        
-        Ok(Deck {
-            config,
-            stock,
-            discard_pile,
-        })
     }
 }

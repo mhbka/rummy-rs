@@ -10,6 +10,8 @@ use std::{
 };
 
 /// The data of a card.
+/// 
+/// Since a `Card` is not serializable, this type can instead be used for external interactions.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CardData {
@@ -103,6 +105,15 @@ impl Card {
     /// Returns whether the card is a `wildcard`, as determined by `deck_config`.
     pub(crate) fn is_wildcard(&self) -> bool {
         Some(self.rank) == self.deck_config.wildcard_rank
+    }
+
+    /// Create a `Card` from `CardData` and a deck config.
+    pub(crate) fn from_card_data(card_data: CardData, deck_config: Arc<DeckConfig>) -> Self {
+        Self {
+            deck_config,
+            rank: card_data.rank,
+            suit: card_data.suit
+        }
     }
 }
 

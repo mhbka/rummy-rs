@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-
+use std::fmt::Debug;
 use crate::{cards::deck::{Deck, DeckConfig}, game::{action::GameAction, error::{ActionError, FailedActionError, GameError, InternalError}, rules::GameRules, score::{RoundScore, VariantPlayerScore}}, player::Player};
 
 /// The state of the game. Includes state common across all variants like players/deck/current round,
@@ -130,7 +130,7 @@ where
 /// 
 /// If a variant doesn't require any unique gamestate, they can simply use an empty struct and implement
 /// `VariantState` on it.
-pub trait VariantState<P: VariantPlayerScore, R: GameRules<VariantState = Self, VariantScore = P>>: Sized {
+pub trait VariantState<P: VariantPlayerScore, R: GameRules<VariantState = Self, VariantScore = P>>: Sized + Clone + Debug + Eq {
     /// Validate if an action is **generally** valid in the current gamestate, for the variant.
     /// 
     /// The default implementation is to just return `Ok(())`. If a variant requires its own validation
@@ -146,9 +146,21 @@ pub trait VariantState<P: VariantPlayerScore, R: GameRules<VariantState = Self, 
 
 /// The phases of a Rummy game.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum GamePhase {
     Draw,
     Play,
     RoundEnd,
     GameEnd
 }
+
+/// A serializable gamestate, purely for serialization purposes.
+struct SerializableGameState<P: VariantPlayerScore, R: GameRules<VariantScore = P>>   {
+    pub phase: GamePhase,
+    pub players: Vec<Player>,
+    pub deck: Deck,
+    pub current_player: usize,
+    pub current_round: usize,
+    pub round_scores: HashMap<usize, RoundScore<P>>,
+    pub variant_state: R::VariantState, 
+} 

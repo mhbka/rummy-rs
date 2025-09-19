@@ -4,8 +4,8 @@ use crate::{cards::{card::{Card, CardData}, deck::DeckConfig, suit_rank::Rank}, 
 /// The basic/standard form of Rummy.
 #[derive(Clone, Debug)]
 pub struct BasicRummyGame {
-    state: GameState<BasicScore, BasicRules>,
-    rules: BasicRules,
+    pub(crate) state: GameState<BasicScore, BasicRules>,
+    pub(crate) rules: BasicRules,
 }
 
 impl BasicRummyGame {

@@ -3,6 +3,7 @@ use crate::{cards::meld::{Meld, Meldable}, game::{action::*, error::{ActionError
 
 /// The rules for basic Rummy.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct BasicRules {
     config: BasicConfig
 }
@@ -204,7 +205,7 @@ impl GameRules for BasicRules {
             .collect();
         let winner_id = *player_scores
             .iter()
-            .find(|(_, score)| score.score_value() == 0)
+            .find(|(_, score)| score.score() == 0)
             .ok_or(InternalError::RoundHasNoWinner)?
             .0;
         let round_score = RoundScore {
