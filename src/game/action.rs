@@ -2,6 +2,7 @@ use crate::cards::card::CardData;
 
 /// The possible interactions with a `Game`.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum GameInteractions {
     Action(GameAction),
     PlayerJoin { player_id: usize },
@@ -15,6 +16,7 @@ pub enum GameInteractions {
 /// Each action aims to include all possible data required by any (mainstream) Rummy variant.
 /// Each variant can use just the data that it requires, and ignore/return errors for unnecessary/invalid data.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum GameAction {
     /// Draw from the deck.
     DrawDeck(DrawDeckAction),
@@ -32,10 +34,12 @@ pub enum GameAction {
 
 /// Represents drawing from the deck.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DrawDeckAction {}
 
 /// Represents drawing from the discard pile.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DrawDiscardPileAction {
     /// For variants that allow taking a chosen number of cards from the discard pile.
     pub count: Option<u8>,
@@ -43,6 +47,7 @@ pub struct DrawDiscardPileAction {
 
 /// Represents laying off a card into an existing meld.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LayOffAction {
     /// The index of the card in the current player's hand to lay off.
     pub card_index: usize,
@@ -56,6 +61,7 @@ pub struct LayOffAction {
 
 /// Represents forming a single meld.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FormMeldAction {
     /// The indices of cards in the current player's hand to form into a meld.
     pub card_indices: Vec<usize>,
@@ -67,6 +73,7 @@ pub struct FormMeldAction {
 /// The user is responsible for ensuring no overlapping of card indexes for each meld.
 /// If there are overlaps, an error will be returned when attempting to execute this action.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FormMeldsAction {
     /// The list of indices of cards to each form into a meld.
     pub melds: Vec<Vec<usize>>,
@@ -74,6 +81,7 @@ pub struct FormMeldsAction {
 
 /// Represents discarding a card.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DiscardAction {
     /// The index of the card in the current player's hand to discard.
     pub card_index: usize,

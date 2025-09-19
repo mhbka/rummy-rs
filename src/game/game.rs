@@ -2,7 +2,7 @@ use super::action::*;
 use crate::{cards::card::{Card, CardData}, game::{error::{ActionError, GameError}, rules::GameRules, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState, VariantState}}};
 
 /// Represents a Rummy game.
-pub trait Game where Self: Sized + Clone {
+pub trait Game where Self: GameTraits {
     /// The `GameRules` that this game follows.
     type Rules: GameRules;
 
@@ -38,3 +38,17 @@ pub trait Game where Self: Sized + Clone {
     /// or the setup failed for some reason.
     fn next_round(&mut self) -> Result<(), GameError>;
 }
+
+#[cfg(feature = "serde")]
+/// Supertraits for a `Game`.
+pub trait GameTraits: Sized + Clone + serde::Serialize + for<'a> serde::Deserialize<'a> {}
+
+#[cfg(not(feature = "serde"))]
+/// Supertraits for a `Game`.
+pub trait GameTraits: Sized + Clone {}
+
+#[cfg(feature = "serde")]
+impl<T> GameTraits for T where T: Sized + Clone + serde::Serialize + for<'a> serde::Deserialize<'a> {}
+
+#[cfg(not(feature = "serde"))]
+impl<T> GameTraits for T where T: Sized + Clone {}

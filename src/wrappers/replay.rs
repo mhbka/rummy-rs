@@ -2,6 +2,7 @@ use crate::{cards::card::CardData, game::{action::{GameAction, GameInteractions}
 
 /// The state of the replay.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ReplayState<G: Game> {
     /// The original game.
     game: History<G>,
@@ -133,6 +134,7 @@ impl<G: Game> ReplayState<G> {
 /// However, for undoing an action/going back in history, we must reconstruct the game
 /// from that round's initial state up to the requested point in history, which is more expensive.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Replay<G: Game> {
     /// The state of the replay.
     replay_state: ReplayState<G>

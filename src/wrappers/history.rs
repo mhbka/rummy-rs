@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 
 /// An entry in the game's history.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct HistoryEntry {
     pub entry: GameInteractions,
     pub time: DateTime<Utc>,
@@ -15,6 +16,7 @@ pub struct HistoryEntry {
 /// 
 /// This means one can construct the state of the game at each step.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct History<G: Game> {
     /// The current game.
     current_game: G,
@@ -76,7 +78,7 @@ impl History<BasicRummyGame> {
     }
 }
 
-impl<G: Game + Clone> Game for History<G> {
+impl<G: Game> Game for History<G> {
     type Rules = G::Rules;
 
     fn execute_action(&mut self, action: GameAction) -> Result<(), ActionError> {

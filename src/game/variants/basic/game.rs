@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::{cards::{card::{Card, CardData}, deck::DeckConfig, suit_rank::Rank}, game::{action::GameAction, error::{ActionError, GameError, GameSetupError}, game::Game, rules::GameRules, state::{GamePhase, GameState}, variants::basic::{config::{BasicConfig, DrawDiscardPileOverride}, rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
+use crate::{cards::{card::{Card, CardData}, deck::DeckConfig, suit_rank::Rank}, game::{action::GameAction, error::{ActionError, GameError, GameSetupError}, game::{Game, GameTraits}, rules::GameRules, state::{GamePhase, GameState}, variants::basic::{config::{BasicConfig, DrawDiscardPileOverride}, rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
 
 /// The basic/standard form of Rummy.
 #[derive(Clone, Debug)]
