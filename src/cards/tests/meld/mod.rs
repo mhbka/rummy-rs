@@ -1,12 +1,9 @@
-// tests/mod.rs or wherever your test modules live
-
 mod errors;
 mod meld_creation;
 mod meld_layoff;
 mod meld_properties;
 mod edge_cases;
 
-// Common test utilities
 use super::super::deck::DeckConfig;
 use super::super::{
     card::Card,
