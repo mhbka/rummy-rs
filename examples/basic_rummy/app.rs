@@ -95,7 +95,7 @@ impl App {
                 self.input_buffer.clear();
                 self.input_mode = InputMode::Normal;
                 if let Some(ref game) = self.game {
-                    match game.get_state().phase {
+                    match game.get_state().phase() {
                         GamePhase::Draw => self.state = AppState::DrawPhase,
                         GamePhase::Play => self.state = AppState::PlayPhase,
                         GamePhase::RoundEnd => self.state = AppState::RoundEnd,
@@ -145,7 +145,7 @@ impl App {
             }
             KeyCode::Char('2') => {
                 if let Some(ref mut game) = self.game {
-                    if game.get_state().deck.discard_pile().len() > 0 {
+                    if game.get_state().deck().discard_pile().len() > 0 {
                         let action = GameAction::DrawDiscardPile(DrawDiscardPileAction { count: Some(1) });
                         if let Err(e) = game.execute_action(action) {
                             self.error_message = Some(format!("Draw failed: {:?}", e));
@@ -208,7 +208,7 @@ impl App {
                         }
                         InputMode::LayOffTargetPlayer => {
                             if let Some(ref game) = self.game {
-                                let player_count = game.get_state().players.len();
+                                let player_count = game.get_state().players().len();
                                 if value < player_count {
                                     self.layoff_data.target_player_index = Some(value);
                                     self.input_mode = InputMode::LayOffTargetMeld;
@@ -221,7 +221,7 @@ impl App {
                         InputMode::LayOffTargetMeld => {
                             if let Some(ref game) = self.game {
                                 let target_player = self.layoff_data.target_player_index.unwrap();
-                                let meld_count = game.get_state().players[target_player].melds().len();
+                                let meld_count = game.get_state().players()[target_player].melds().len();
                                 if value < meld_count {
                                     self.layoff_data.target_meld_index = Some(value);
                                     self.execute_layoff();
@@ -323,7 +323,7 @@ impl App {
             current_player_hand.sort();
             game
                 .rearrange_player_hand(current_player.id(), current_player_hand)
-                .expect(&format!("{:?}", game.get_state().phase));
+                .expect(&format!("{:?}", game.get_state().phase()));
             self.error_message = Some("Sorted hand!".into());
             self.update_game_state();
         }
@@ -395,7 +395,7 @@ impl App {
 
     fn update_game_state(&mut self) {
         if let Some(ref game) = self.game {
-            match game.get_state().phase {
+            match game.get_state().phase() {
                 GamePhase::Draw => self.state = AppState::DrawPhase,
                 GamePhase::Play => self.state = AppState::PlayPhase,
                 GamePhase::RoundEnd => self.state = AppState::RoundEnd,

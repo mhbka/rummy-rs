@@ -6,7 +6,7 @@ fn deal_2_players() {
     let mut game = create_basic_game(2).unwrap();
     game.next_round().unwrap();
     let state = game.get_state();
-    for player in &state.players {
+    for player in state.players() {
         assert_eq!(player.cards().len(), 10);
     }
 }
@@ -17,7 +17,7 @@ fn deal_3_to_5_players() {
         let mut game = create_basic_game(player_count).unwrap();
         game.next_round().unwrap();
         let state = game.get_state();
-        for player in &state.players {
+        for player in state.players() {
             assert_eq!(player.cards().len(), 7);
         }
     }
@@ -28,7 +28,7 @@ fn deal_6_players() {
     let mut game = create_basic_game(6).unwrap();
     game.next_round().unwrap();
     let state = game.get_state();
-    for player in &state.players {
+    for player in state.players() {
         assert_eq!(player.cards().len(), 6);
     }
 }
@@ -44,7 +44,7 @@ fn deal_7_players_requires_two_decks() {
     let mut game = create_basic_game_with_config(7, None, None, Some(deck_config)).unwrap();
     game.next_round().unwrap();
     let state = game.get_state();
-    for player in &state.players {
+    for player in state.players() {
         assert_eq!(player.cards().len(), 10);
     }
 }

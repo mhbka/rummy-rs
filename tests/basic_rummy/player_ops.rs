@@ -6,7 +6,7 @@ fn add_player_during_new_round() {
     let mut game = create_basic_game(2).unwrap();
     game.add_player(2).unwrap();
     game.next_round().unwrap();
-    for player in &game.get_state().players {
+    for player in game.get_state().players() {
         assert!(player.active());
     }
 }
@@ -16,7 +16,7 @@ fn add_player_during_round() {
     let mut game = create_basic_game(2).unwrap();
     game.next_round().unwrap();
     game.add_player(2).unwrap();
-    for player in &game.get_state().players {
+    for player in game.get_state().players() {
         if player.id() == 2 {
             assert!(!player.active());
         } else {
@@ -45,9 +45,9 @@ fn quit_player_during_round() {
     game.next_round().unwrap();
     game.quit_player(0).unwrap();
     let state = game.get_state();
-    assert!(!state.players[0].active());
-    assert!(state.players[1].active());
-    assert!(state.players[2].active());
+    assert!(!state.players()[0].active());
+    assert!(state.players()[1].active());
+    assert!(state.players()[2].active());
 }
 
 #[test]

@@ -27,15 +27,15 @@ pub fn render_game_state(f: &mut Frame, area: Rect, app: &App) {
             .join(", ");
 
         let left_content = vec![
-            Line::from(Span::styled(format!("Round: {}", gamestate.current_round), Style::default().fg(Color::Cyan))),
-            Line::from(Span::styled(format!("Current Player: {}", gamestate.current_player), Style::default().fg(Color::Yellow))),
+            Line::from(Span::styled(format!("Round: {}", gamestate.current_round()), Style::default().fg(Color::Cyan))),
+            Line::from(Span::styled(format!("Current player ID: {}", gamestate.get_current_player().unwrap().id()), Style::default().fg(Color::Yellow))),
             Line::from(""),
             Line::from(Span::styled(format!("Your hand ({} cards):", gamestate.get_current_player().unwrap().cards().len()), Style::default().add_modifier(Modifier::BOLD))),
             Line::from(hand_text),
             Line::from(""),
-            Line::from(format!("Deck size: {}", gamestate.deck.stock().len())),
-            Line::from(format!("Discard pile size: {}", gamestate.deck.discard_pile().len())),
-            Line::from(format!("Top discard: {:?}", gamestate.deck.peek_discard_pile())),
+            Line::from(format!("Deck size: {}", gamestate.deck().stock().len())),
+            Line::from(format!("Discard pile size: {}", gamestate.deck().discard_pile().len())),
+            Line::from(format!("Top discard: {:?}", gamestate.deck().peek_discard_pile())),
         ];
 
         let left_paragraph = Paragraph::new(left_content)
@@ -45,7 +45,7 @@ pub fn render_game_state(f: &mut Frame, area: Rect, app: &App) {
 
         // Right side - All players info
         let mut players_text = Vec::new();
-        for player in &gamestate.players {
+        for player in gamestate.players() {
             if player.active() {
                 players_text.push(Line::from(format!("Player {}: {} cards", player.id(), player.cards().len())));
                 for (i, meld) in player.melds().iter().enumerate() {

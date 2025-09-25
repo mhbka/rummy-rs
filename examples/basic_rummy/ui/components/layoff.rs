@@ -33,13 +33,13 @@ pub fn render_layoff_input(f: &mut Frame, area: Rect, app: &App) {
         );
     }
     if let Some(i) = app.layoff_data.target_player_index {
-        let player = &gamestate.players[i];
+        let player = &gamestate.players()[i];
         layoff_progress.push(
             Line::from(format!("Player ID: {} (melds: {})", player.id(), player.melds().len()))
         );
     }
     if let Some(i) = app.layoff_data.target_meld_index {
-        let meld = &gamestate.players[app.layoff_data.target_player_index.unwrap()].melds()[i];
+        let meld = &gamestate.players()[app.layoff_data.target_player_index.unwrap()].melds()[i];
         layoff_progress.push(
             Line::from(format!("Meld: {meld:?}"))
         );

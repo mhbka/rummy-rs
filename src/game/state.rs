@@ -10,13 +10,13 @@ use crate::{cards::deck::{Deck, DeckConfig}, game::{action::GameAction, error::{
 /// Accidental wrong mutation of the state will probably lead to an invalid gamestate.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GameState<P: VariantPlayerScore, R: GameRules<VariantScore = P>>   {
-    pub phase: GamePhase,
-    pub players: Vec<Player>,
-    pub deck: Deck,
-    pub current_player: usize,
-    pub current_round: usize,
-    pub round_scores: HashMap<usize, RoundScore<P>>,
-    pub variant_state: R::VariantState, 
+    pub(crate) phase: GamePhase,
+    pub(crate) players: Vec<Player>,
+    pub(crate) deck: Deck,
+    pub(crate) current_player: usize,
+    pub(crate) current_round: usize,
+    pub(crate) round_scores: HashMap<usize, RoundScore<P>>,
+    pub(crate) variant_state: R::VariantState, 
 } 
 
 impl<P: VariantPlayerScore, R: GameRules<VariantScore = P>> GameState<P, R> 
@@ -120,6 +120,41 @@ where
             next_player = (self.current_player + 1) % self.players.len();
         }
         self.current_player = next_player;
+    }
+
+    /// Get the game's phase.
+    pub fn phase(&self) -> GamePhase {
+        self.phase
+    }
+
+    /// Get the game's players.
+    pub fn players(&self) -> &Vec<Player> {
+        &self.players
+    }
+
+    /// Get the game's deck.
+    pub fn deck(&self) -> &Deck {
+        &self.deck
+    }
+
+    /// Get the index of the current player.
+    pub fn current_player_index(&self) -> usize {
+        self.current_player
+    }
+
+    /// Get the current round.
+    pub fn current_round(&self) -> usize {
+        self.current_round
+    }
+
+    /// Get the round scores.
+    pub fn round_scores(&self) -> &HashMap<usize, RoundScore<P>> {
+        &self.round_scores
+    }
+
+    /// Get the variant state.
+    pub fn variant_state(&self) -> &R::VariantState {
+        &self.variant_state
     }
 }
 

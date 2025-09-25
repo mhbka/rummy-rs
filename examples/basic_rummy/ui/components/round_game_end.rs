@@ -11,13 +11,13 @@ use crate::app::{App, InputMode};
 pub fn render_round_end(f: &mut Frame, area: Rect, app: &App) {
     if let Some(ref game) = app.game {
         let gamestate = game.get_state();
-        let latest_score = gamestate.round_scores
-            .get(&gamestate.current_round);
+        let latest_score = gamestate.round_scores()
+            .get(&gamestate.current_round());
 
         let content = vec![
             Line::from(Span::styled("Round Ended!", Style::default().add_modifier(Modifier::BOLD).fg(Color::Green))),
             Line::from(""),
-            Line::from(format!("Round {} complete", gamestate.current_round)),
+            Line::from(format!("Round {} complete", gamestate.current_round())),
             Line::from(format!("Scores: {:?}", latest_score)),
             Line::from(""),
             Line::from("Press Enter to continue to next round..."),

@@ -10,7 +10,7 @@ fn override_deal_amount_is_correct() {
     };
     let mut game = create_basic_game_with_config(2, None, Some(game_config), None).unwrap();
     game.next_round().unwrap();
-    for player in &game.get_state().players {
+    for player in game.get_state().players() {
         assert_eq!(player.cards().len(), 20);
     }
 }
@@ -24,7 +24,7 @@ fn override_is_correct_with_many_players() {
     };
     let mut game = create_basic_game_with_config(20, None, Some(game_config), None).unwrap();
     game.next_round().unwrap();
-    for player in &game.get_state().players {
+    for player in game.get_state().players() {
         assert_eq!(player.cards().len(), 1);
     }
 }

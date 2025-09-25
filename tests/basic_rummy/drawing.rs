@@ -6,8 +6,8 @@ fn default_draw_one_card_from_deck() {
     let mut game = create_basic_game(2).unwrap();
     game.next_round().unwrap();
     game.execute_action(GameAction::DrawDeck(DrawDeckAction {})).unwrap();
-    assert_eq!(game.get_state().players[0].cards().len(), 11);
-    assert_eq!(game.get_state().players[1].cards().len(), 10);
+    assert_eq!(game.get_state().players()[0].cards().len(), 11);
+    assert_eq!(game.get_state().players()[1].cards().len(), 10);
 }
 
 #[test]
@@ -20,8 +20,8 @@ fn override_draw_multiple_cards_from_deck() {
     let mut game = create_basic_game_with_config(2, None, Some(game_config), None).unwrap();
     game.next_round().unwrap();
     game.execute_action(GameAction::DrawDeck(DrawDeckAction {})).unwrap();
-    assert_eq!(game.get_state().players[0].cards().len(), 15);
-    assert_eq!(game.get_state().players[1].cards().len(), 10);
+    assert_eq!(game.get_state().players()[0].cards().len(), 15);
+    assert_eq!(game.get_state().players()[1].cards().len(), 10);
 }
 
 #[test]
@@ -34,7 +34,7 @@ fn default_draw_one_card_from_discard_pile() {
     // since we didn't override, this should just draw 1
     game.execute_action(GameAction::DrawDiscardPile(DrawDiscardPileAction { count: Some(250) })).unwrap();
 
-    assert_eq!(game.get_state().players[1].cards().len(), 11);
+    assert_eq!(game.get_state().players()[1].cards().len(), 11);
 }
 
 #[test]
@@ -58,7 +58,7 @@ fn override_draw_multiple_from_discard_pile() {
     // config to draw a constant value of 2 from discard pile, so this value shouldn't affect it
     game.execute_action(GameAction::DrawDiscardPile(DrawDiscardPileAction { count: Some(250) })).unwrap();
 
-    assert_eq!(game.get_state().players[1].cards().len(), 12);
+    assert_eq!(game.get_state().players()[1].cards().len(), 12);
 }
 
 #[test]
@@ -85,7 +85,7 @@ fn override_draw_chosen_amount_from_discard_pile() {
     // should be fine
     game.execute_action(GameAction::DrawDiscardPile(DrawDiscardPileAction { count: Some(3) })).unwrap();
 
-    assert_eq!(game.get_state().players[1].cards().len(), 13);
+    assert_eq!(game.get_state().players()[1].cards().len(), 13);
 }
 
 #[test]
@@ -109,5 +109,5 @@ fn override_draw_whole_discard_pile() {
     // since override to draw entire discard pile, this value shouldn't affect it
     game.execute_action(GameAction::DrawDiscardPile(DrawDiscardPileAction { count: Some(0) })).unwrap();
 
-    assert_eq!(game.get_state().players[1].cards().len(), 13);
+    assert_eq!(game.get_state().players()[1].cards().len(), 13);
 }
