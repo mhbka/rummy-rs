@@ -3,7 +3,7 @@ use crate::{
     game::{
         action::{GameAction, GameInteractions},
         error::{ActionError, GameError},
-        game::Game,
+        r#trait::Game,
         rules::GameRules,
     },
     wrappers::history::{History, HistoryEntry},
@@ -43,7 +43,7 @@ impl<G: Game + Clone> ReplayState<G> {
     }
 
     /// Applies the next action(s) and returns it.
-    fn next(&mut self) -> Option<&HistoryEntry> {
+    fn next_action(&mut self) -> Option<&HistoryEntry> {
         loop {
             let history = self
                 .game
@@ -75,7 +75,7 @@ impl<G: Game + Clone> ReplayState<G> {
     }
 
     /// Reverses the previous action(s) and returns it.
-    fn previous(&mut self) {
+    fn previous_action(&mut self) {
         if self.round == 0 {
             return;
         }
@@ -110,8 +110,8 @@ impl<G: Game + Clone> ReplayState<G> {
                 .clone();
         }
 
-        for i in 0..=self.action {
-            Self::apply_action(&mut self.replaying_game, &round_history[i]);
+        for action in round_history.iter().take(self.action + 1) {
+            Self::apply_action(&mut self.replaying_game, action);
         }
     }
 
@@ -188,15 +188,15 @@ impl<G: Game + Clone> Replay<G> {
     /// If `skip_failed_actions`, skips any failed actions till a successful action is found.
     ///
     /// If there are no rounds left, returns `None`.
-    pub fn next(&mut self) -> Option<&HistoryEntry> {
-        self.replay_state.next()
+    pub fn next_action(&mut self) -> Option<&HistoryEntry> {
+        self.replay_state.next_action()
     }
 
     /// The exact opposite effect of `next`. Reverses the previous action and returns that action.
     ///
     /// If `skip_failed_actions`, reverses all the way till the previous successful action.
-    pub fn previous(&mut self) {
-        self.replay_state.previous()
+    pub fn previous_action(&mut self) {
+        self.replay_state.previous_action()
     }
 }
 

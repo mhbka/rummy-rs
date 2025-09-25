@@ -214,14 +214,3 @@ pub enum GamePhase {
     RoundEnd,
     GameEnd,
 }
-
-/// A serializable gamestate, purely for serialization purposes.
-struct SerializableGameState<P: VariantPlayerScore, R: GameRules<VariantScore = P>> {
-    pub phase: GamePhase,
-    pub players: Vec<Player>,
-    pub deck: Deck,
-    pub current_player: usize,
-    pub current_round: usize,
-    pub round_scores: HashMap<usize, RoundScore<P>>,
-    pub variant_state: R::VariantState,
-}

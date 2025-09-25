@@ -7,7 +7,7 @@ use rummy::{
     },
     game::{
         action::{DiscardAction, DrawDeckAction, FormMeldAction, GameAction},
-        game::Game,
+        r#trait::Game,
         variants::basic::game::BasicRummyGame,
     },
 };

@@ -24,8 +24,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1];
-        assert!(Run::new(&mut cards, &mut indices).is_err());
+        let indices = vec![0, 1];
+        assert!(Run::new(&mut cards, &indices).is_err());
     }
 
     #[test]
@@ -48,8 +48,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2];
-        assert!(Run::new(&mut cards, &mut indices).is_err());
+        let indices = vec![0, 1, 2];
+        assert!(Run::new(&mut cards, &indices).is_err());
     }
 
     #[test]
@@ -72,8 +72,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2, 3]; // 3 does not exist as index
-        assert!(Run::new(&mut cards, &mut indices).is_err());
+        let indices = vec![0, 1, 2, 3]; // 3 does not exist as index
+        assert!(Run::new(&mut cards, &indices).is_err());
     }
 
     #[test]
@@ -103,8 +103,8 @@ mod tests {
                 deck_config: high_rank_cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2, 3];
-        assert!(Run::new(&mut cards, &mut indices).is_err()); // Two now highest, so Three is no longer valid as a consecutive rank
+        let indices = vec![0, 1, 2, 3];
+        assert!(Run::new(&mut cards, &indices).is_err()); // Two now highest, so Three is no longer valid as a consecutive rank
     }
 
     #[test]
@@ -128,8 +128,8 @@ mod tests {
             },
         ];
         let backup_cards = cards.clone();
-        let mut indices = vec![0, 1, 2];
-        let run = Run::new(&mut cards, &mut indices);
+        let indices = vec![0, 1, 2];
+        let run = Run::new(&mut cards, &indices);
 
         assert!(cards.is_empty());
         assert!(run.is_ok());
@@ -188,8 +188,8 @@ mod tests {
         ];
         let mut backup_cards = cards.clone();
         backup_cards.sort();
-        let mut indices = vec![0, 1, 2];
-        let run = Run::new(&mut cards, &mut indices);
+        let indices = vec![0, 1, 2];
+        let run = Run::new(&mut cards, &indices);
 
         assert!(run.is_ok());
         assert!(cards.is_empty());
@@ -223,8 +223,8 @@ mod tests {
             },
         ];
         let backup_cards = cards.clone();
-        let mut indices = vec![0, 1, 2];
-        let run = Run::new(&mut cards, &mut indices);
+        let indices = vec![0, 1, 2];
+        let run = Run::new(&mut cards, &indices);
 
         assert!(cards.is_empty());
         assert!(run.is_ok());
@@ -251,8 +251,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2];
-        let mut run = Run::new(&mut cards.clone(), &mut indices).unwrap();
+        let indices = vec![0, 1, 2];
+        let mut run = Run::new(&mut cards.clone(), &indices).unwrap();
         let mut layoff_cards = vec![
             Card {
                 rank: Rank::Five,
@@ -295,8 +295,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2, 3];
-        let mut run = Run::new(&mut cards.clone(), &mut indices).unwrap();
+        let indices = vec![0, 1, 2, 3];
+        let mut run = Run::new(&mut cards.clone(), &indices).unwrap();
         let mut layoff_cards = vec![
             Card {
                 rank: Rank::Ace,
@@ -373,8 +373,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2];
-        let mut run = Run::new(&mut cards.clone(), &mut indices).unwrap();
+        let indices = vec![0, 1, 2];
+        let mut run = Run::new(&mut cards.clone(), &indices).unwrap();
         let mut card = vec![Card {
             rank: Rank::Joker,
             suit: Suit::Joker,
@@ -443,8 +443,8 @@ mod tests {
                 deck_config: cfg.clone(),
             }, // this too
         ];
-        let mut indices = vec![0, 1, 2, 3, 4];
-        let mut run = Run::new(&mut cards.clone(), &mut indices).unwrap();
+        let indices = vec![0, 1, 2, 3, 4];
+        let mut run = Run::new(&mut cards.clone(), &indices).unwrap();
         let mut layoff_cards = vec![
             Card {
                 rank: Rank::Four,

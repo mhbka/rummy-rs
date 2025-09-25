@@ -7,7 +7,7 @@ use rummy::{
             LayOffAction,
         },
         error::GameError,
-        game::Game,
+        r#trait::Game,
         state::GamePhase,
         variants::basic::{config::BasicConfig, game::BasicRummyGame},
     },

@@ -24,8 +24,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1];
-        assert!(Set::new(&mut cards, &mut indices).is_err());
+        let indices = vec![0, 1];
+        assert!(Set::new(&mut cards, &indices).is_err());
     }
 
     #[test]
@@ -48,8 +48,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2];
-        assert!(Set::new(&mut cards, &mut indices).is_err());
+        let indices = vec![0, 1, 2];
+        assert!(Set::new(&mut cards, &indices).is_err());
     }
 
     #[test]
@@ -72,8 +72,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2, 3]; // 3 does not exist as index
-        assert!(Set::new(&mut cards, &mut indices).is_err());
+        let indices = vec![0, 1, 2, 3]; // 3 does not exist as index
+        assert!(Set::new(&mut cards, &indices).is_err());
     }
 
     #[test]
@@ -97,8 +97,8 @@ mod tests {
             },
         ];
         let backup_cards = cards.clone();
-        let mut indices = vec![0, 1, 2];
-        let set = Set::new(&mut cards, &mut indices);
+        let indices = vec![0, 1, 2];
+        let set = Set::new(&mut cards, &indices);
 
         assert!(cards.is_empty());
         assert!(set.is_ok());
@@ -132,8 +132,8 @@ mod tests {
         ];
         let backup_cards = cards.clone();
         let backup_cards_set = backup_cards.iter().collect();
-        let mut indices = vec![2, 0, 3, 1]; // in the wrong order
-        let set = Set::new(&mut cards, &mut indices);
+        let indices = vec![2, 0, 3, 1]; // in the wrong order
+        let set = Set::new(&mut cards, &indices);
 
         assert!(cards.is_empty());
         assert!(set.is_ok());
@@ -164,8 +164,8 @@ mod tests {
             }, // the wildcard
         ];
         let backup_cards = cards.clone();
-        let mut indices = vec![0, 1, 2];
-        let set = Set::new(&mut cards, &mut indices);
+        let indices = vec![0, 1, 2];
+        let set = Set::new(&mut cards, &indices);
 
         assert!(set.is_ok());
         assert!(cards.is_empty());
@@ -192,8 +192,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2];
-        let mut set = Set::new(&mut cards.clone(), &mut indices).unwrap();
+        let indices = vec![0, 1, 2];
+        let mut set = Set::new(&mut cards.clone(), &indices).unwrap();
         let mut layoff_card = vec![Card {
             rank: Rank::Two,
             suit: Suit::Clubs,
@@ -223,8 +223,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2];
-        let mut set = Set::new(&mut cards.clone(), &mut indices).unwrap();
+        let indices = vec![0, 1, 2];
+        let mut set = Set::new(&mut cards.clone(), &indices).unwrap();
         let mut layoff_card = vec![Card {
             rank: Rank::Ace,
             suit: Suit::Spades,
@@ -283,8 +283,8 @@ mod tests {
                 deck_config: cfg.clone(),
             },
         ];
-        let mut indices = vec![0, 1, 2];
-        let mut set = Set::new(&mut cards.clone(), &mut indices).unwrap();
+        let indices = vec![0, 1, 2];
+        let mut set = Set::new(&mut cards.clone(), &indices).unwrap();
         let mut card = vec![Card {
             rank: Rank::Joker,
             suit: Suit::Joker,
@@ -348,8 +348,8 @@ mod tests {
                 deck_config: cfg.clone(),
             }, // replace this in the layoff
         ];
-        let mut indices = vec![0, 1, 2, 3];
-        let mut set = Set::new(&mut cards.clone(), &mut indices).unwrap();
+        let indices = vec![0, 1, 2, 3];
+        let mut set = Set::new(&mut cards.clone(), &indices).unwrap();
         let mut card = vec![Card {
             rank: Rank::Ace,
             suit: Suit::Spades,
@@ -420,8 +420,8 @@ mod tests {
             },
         ];
         let mut layoff_cards = cards.clone();
-        let mut indices = vec![0, 1, 2, 3];
-        let mut set = Set::new(&mut cards.clone(), &mut indices).unwrap();
+        let indices = vec![0, 1, 2, 3];
+        let mut set = Set::new(&mut cards.clone(), &indices).unwrap();
         let mut set_cards = cards.clone();
         set_cards.append(&mut cards.clone());
 

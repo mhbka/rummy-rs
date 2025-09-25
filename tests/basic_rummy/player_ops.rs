@@ -1,5 +1,5 @@
 use crate::common::fixtures::create_basic_game;
-use rummy::game::{error::GameError, game::Game};
+use rummy::game::{error::GameError, r#trait::Game};
 
 #[test]
 fn add_player_during_new_round() {

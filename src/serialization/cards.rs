@@ -31,7 +31,7 @@ pub(super) enum SerializableMeld {
 
 impl SerializableMeld {
     /// Convert this to a `Meld`.
-    pub fn to_meld(self, deck_config: Arc<DeckConfig>) -> Meld {
+    pub fn into_meld(self, deck_config: Arc<DeckConfig>) -> Meld {
         match self {
             Self::Set(set) => {
                 let cards = set
@@ -100,7 +100,7 @@ pub(super) struct SerializableDeck {
 
 impl SerializableDeck {
     /// Convert to a `Deck`.
-    pub fn to_deck(self, deck_config: Arc<DeckConfig>) -> Deck {
+    pub fn into_deck(self, deck_config: Arc<DeckConfig>) -> Deck {
         let stock = self
             .stock
             .into_iter()

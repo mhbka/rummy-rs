@@ -12,7 +12,7 @@ pub trait Meldable: Sized {
     /// Returns `Ok` if the cards in `hand_cards` indexed by `indices` form a valid meld.
     ///
     /// If not, returns an `Err` with the reason.
-    fn valid(hand_cards: &Vec<Card>, indices: &[usize]) -> Result<(), MeldError>;
+    fn valid(hand_cards: &[Card], indices: &[usize]) -> Result<(), MeldError>;
 
     /// Attempt to create a new meld out of cards in `hand_cards` indexed by `indices`.
     /// If valid, the indexed cards are removed and `Ok` is returned.
@@ -122,7 +122,7 @@ impl Meldable for Meld {
         }
     }
 
-    fn valid(hand_cards: &Vec<Card>, indices: &[usize]) -> Result<(), MeldError> {
+    fn valid(hand_cards: &[Card], indices: &[usize]) -> Result<(), MeldError> {
         match Set::valid(hand_cards, indices) {
             Ok(_) => Ok(()),
             Err(set_err) => match Run::valid(hand_cards, indices) {
@@ -191,7 +191,7 @@ impl Meldable for Set {
         Ok(Set { cards, set_rank })
     }
 
-    fn valid(hand_cards: &Vec<Card>, indices: &[usize]) -> Result<(), MeldError> {
+    fn valid(hand_cards: &[Card], indices: &[usize]) -> Result<(), MeldError> {
         if indices.len() < 3 {
             return Err(MeldError::InsufficientCards {
                 provided: indices.len(),
@@ -316,7 +316,7 @@ impl Meldable for Run {
         Ok(Run { cards, set_suit })
     }
 
-    fn valid(hand_cards: &Vec<Card>, indices: &[usize]) -> Result<(), MeldError> {
+    fn valid(hand_cards: &[Card], indices: &[usize]) -> Result<(), MeldError> {
         if indices.len() < 3 {
             return Err(MeldError::InsufficientCards {
                 provided: indices.len(),

@@ -6,7 +6,7 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use rummy::{cards::meld::Meldable, game::game::Game};
+use rummy::{cards::meld::Meldable, game::r#trait::Game};
 
 pub fn render_round_end(f: &mut Frame, area: Rect, app: &App) {
     if let Some(ref game) = app.game {

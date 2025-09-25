@@ -21,7 +21,7 @@ pub(super) struct SerializablePlayer {
 
 impl SerializablePlayer {
     /// Convert to a `Player`.
-    pub fn to_player(self, deck_config: Arc<DeckConfig>) -> Player {
+    pub fn into_player(self, deck_config: Arc<DeckConfig>) -> Player {
         let cards = self
             .cards
             .into_iter()
@@ -30,7 +30,7 @@ impl SerializablePlayer {
         let melds = self
             .melds
             .into_iter()
-            .map(|m| m.to_meld(deck_config.clone()))
+            .map(|m| m.into_meld(deck_config.clone()))
             .collect();
         Player {
             id: self.id,

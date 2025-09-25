@@ -3,7 +3,7 @@ use crate::{
     game::{
         action::{GameAction, GameInteractions},
         error::{ActionError, GameError, GameSetupError},
-        game::Game,
+        r#trait::Game,
         rules::GameRules,
         state::GameState,
         variants::basic::{config::BasicConfig, game::BasicRummyGame},

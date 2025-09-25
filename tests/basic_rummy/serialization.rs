@@ -2,7 +2,7 @@
 #[cfg(feature = "serde")]
 fn serialization_works() {
     use crate::common::fixtures::create_basic_game;
-    use rummy::game::game::Game;
+    use rummy::game::r#trait::Game;
 
     let mut game = create_basic_game(2).unwrap();
     game.next_round().unwrap();

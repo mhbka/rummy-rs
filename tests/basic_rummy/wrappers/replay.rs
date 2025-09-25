@@ -1,7 +1,7 @@
 use rummy::{
     game::{
         action::{DiscardAction, DrawDeckAction, FormMeldAction, GameAction},
-        game::Game,
+        r#trait::Game,
     },
     wrappers::replay::Replay,
 };
@@ -54,17 +54,18 @@ fn replay_is_correct() {
     let mut game = Replay::new(game, false);
 
     // check each state is correct
-    game.next().unwrap();
+    game.next_action().unwrap();
     assert_eq!(game.get_replaying_game().get_state(), &state_1);
-    game.next().unwrap();
+    game.next_action().unwrap();
     assert_eq!(game.get_replaying_game().get_state(), &state_2);
-    game.next().unwrap();
+    game.next_action().unwrap();
     assert_eq!(game.get_replaying_game().get_state(), &state_3);
 
     // our failed discard shows no change in state
-    game.next().unwrap();
+    game.next_action().unwrap();
     assert_eq!(game.get_replaying_game().get_state(), &state_3);
 
-    game.next().unwrap();
+    // then the last action is again correct
+    game.next_action().unwrap();
     assert_eq!(game.get_replaying_game().get_state(), &state_4);
 }

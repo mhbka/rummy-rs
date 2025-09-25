@@ -1,7 +1,7 @@
 use crate::common::fixtures::create_basic_game_with_history;
 use rummy::game::{
     action::{DiscardAction, DrawDeckAction, FormMeldAction, GameAction, GameInteractions},
-    game::Game,
+    r#trait::Game,
 };
 
 #[test]

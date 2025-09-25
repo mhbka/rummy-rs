@@ -1,7 +1,7 @@
 use crate::common::fixtures::create_basic_game;
 use rummy::game::{
     action::{DrawDeckAction, FormMeldAction, GameAction},
-    game::Game,
+    r#trait::Game,
 };
 
 #[test]

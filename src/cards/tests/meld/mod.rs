@@ -35,6 +35,7 @@ pub fn create_set_cards(rank: Rank, suits: &[Suit], config: Arc<DeckConfig>) -> 
 }
 
 /// Helper to create a run of cards in the same suit
+#[allow(dead_code)]
 pub fn create_run_cards(
     start_rank: Rank,
     length: usize,

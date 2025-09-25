@@ -207,7 +207,7 @@ impl GameRules for BasicRules {
         mut action: FormMeldsAction,
     ) -> Result<(), ActionError> {
         let player = state.get_current_player_mut()?;
-        let mut melds = Meld::multiple(&mut player.cards, &mut action.melds)
+        let mut melds = Meld::multiple(&mut player.cards, &action.melds)
             .map_err(FailedActionError::FailedMeld)?;
         player.melds.append(&mut melds);
 

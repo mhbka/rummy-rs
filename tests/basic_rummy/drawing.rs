@@ -1,7 +1,7 @@
 use crate::common::fixtures::{create_basic_game, create_basic_game_with_config};
 use rummy::game::{
     action::{DiscardAction, DrawDeckAction, DrawDiscardPileAction, GameAction},
-    game::Game,
+    r#trait::Game,
     variants::basic::config::{BasicConfig, DrawDiscardPileOverride},
 };
 

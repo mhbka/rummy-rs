@@ -28,9 +28,9 @@ impl SerializableBasicRummyGame {
     }
 
     /// Convert this to a `BasicRummyGame`.
-    pub fn to_game(self) -> BasicRummyGame {
+    pub fn into_game(self) -> BasicRummyGame {
         BasicRummyGame {
-            state: self.state.to_gamestate(),
+            state: self.state.into_gamestate(),
             rules: self.rules,
         }
     }
@@ -53,7 +53,7 @@ impl<'de> serde::Deserialize<'de> for BasicRummyGame {
         D: serde::Deserializer<'de>,
     {
         let serialized_game = SerializableBasicRummyGame::deserialize(deserializer)?;
-        let game = serialized_game.to_game();
+        let game = serialized_game.into_game();
         Ok(game)
     }
 }
@@ -73,14 +73,14 @@ pub(super) struct SerializableGameState<P: VariantPlayerScore, R: GameRules<Vari
 
 impl<P: VariantPlayerScore, R: GameRules<VariantScore = P>> SerializableGameState<P, R> {
     /// Convert this to an actual `GameState`.
-    pub fn to_gamestate(self) -> GameState<P, R> {
+    pub fn into_gamestate(self) -> GameState<P, R> {
         let deck_config = Arc::new(self.deck_config);
         let players = self
             .players
             .into_iter()
-            .map(|p| p.to_player(deck_config.clone()))
+            .map(|p| p.into_player(deck_config.clone()))
             .collect();
-        let deck = self.deck.to_deck(deck_config);
+        let deck = self.deck.into_deck(deck_config);
         GameState {
             phase: self.phase,
             players,

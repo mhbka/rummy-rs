@@ -7,7 +7,7 @@ use crate::{
     game::{
         action::GameAction,
         error::{ActionError, GameError, GameSetupError},
-        game::Game,
+        r#trait::Game,
         rules::GameRules,
         state::{GamePhase, GameState},
         variants::basic::{
