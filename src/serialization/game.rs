@@ -1,7 +1,6 @@
 use crate::{
     cards::deck::DeckConfig,
     game::{
-        game::Game,
         rules::GameRules,
         score::{RoundScore, VariantPlayerScore},
         state::{GamePhase, GameState},
@@ -98,7 +97,7 @@ impl<P: VariantPlayerScore, R: GameRules<VariantScore = P>> SerializableGameStat
         let players = state
             .players
             .iter()
-            .map(|p| SerializablePlayer::from_player(p))
+            .map(SerializablePlayer::from_player)
             .collect();
         let deck = SerializableDeck::from_deck(&state.deck);
         Self {

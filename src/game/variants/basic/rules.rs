@@ -153,7 +153,7 @@ impl GameRules for BasicRules {
                 .ok_or(FailedActionError::InvalidMeldIndex)?;
             target_meld
                 .layoff_card(&mut current_player.cards, action.card_index)
-                .map_err(|err| FailedActionError::FailedMeld(err))?;
+                .map_err(FailedActionError::FailedMeld)?;
         } else {
             // Different players - use `split_at_mut`, otherwise we get multiple mut references
             let (current_idx, target_idx) = (state.current_player, action.target_player_index);
@@ -174,10 +174,10 @@ impl GameRules for BasicRules {
                 .ok_or(FailedActionError::InvalidMeldIndex)?;
             target_meld
                 .layoff_card(&mut current_player.cards, action.card_index)
-                .map_err(|err| FailedActionError::FailedMeld(err))?;
+                .map_err(FailedActionError::FailedMeld)?;
         }
 
-        if state.get_current_player_mut()?.cards.len() == 0 {
+        if state.get_current_player_mut()?.cards.is_empty() {
             state.phase = GamePhase::RoundEnd;
         }
 
@@ -191,10 +191,10 @@ impl GameRules for BasicRules {
     ) -> Result<(), ActionError> {
         let player = state.get_current_player_mut()?;
         let meld = Meld::new(&mut player.cards, &action.card_indices)
-            .map_err(|err| FailedActionError::FailedMeld(err))?;
+            .map_err(FailedActionError::FailedMeld)?;
         player.melds.push(meld);
 
-        if player.cards.len() == 0 {
+        if player.cards.is_empty() {
             state.phase = GamePhase::RoundEnd;
         }
 
@@ -208,10 +208,10 @@ impl GameRules for BasicRules {
     ) -> Result<(), ActionError> {
         let player = state.get_current_player_mut()?;
         let mut melds = Meld::multiple(&mut player.cards, &mut action.melds)
-            .map_err(|err| FailedActionError::FailedMeld(err))?;
+            .map_err(FailedActionError::FailedMeld)?;
         player.melds.append(&mut melds);
 
-        if player.cards.len() == 0 {
+        if player.cards.is_empty() {
             state.phase = GamePhase::RoundEnd;
         }
 

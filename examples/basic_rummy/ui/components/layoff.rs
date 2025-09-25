@@ -47,7 +47,7 @@ pub fn render_layoff_input(f: &mut Frame, area: Rect, app: &App) {
 
     let content: Vec<_> = layoff_progress
         .into_iter()
-        .chain(input.into_iter())
+        .chain(input)
         .collect();
 
     let paragraph = Paragraph::new(content)

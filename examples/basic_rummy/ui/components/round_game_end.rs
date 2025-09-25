@@ -22,7 +22,7 @@ pub fn render_round_end(f: &mut Frame, area: Rect, app: &App) {
             )),
             Line::from(""),
             Line::from(format!("Round {} complete", gamestate.current_round())),
-            Line::from(format!("Scores: {:?}", latest_score)),
+            Line::from(format!("Scores: {latest_score:?}")),
             Line::from(""),
             Line::from("Press Enter to continue to next round..."),
         ];

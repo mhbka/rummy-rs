@@ -141,14 +141,14 @@ impl Deck {
     pub fn draw_discard_pile(&mut self, amount: usize) -> Result<Vec<Card>, String> {
         let discard_size = self.discard_pile.len();
         if discard_size == 0 {
-            return Err(format!("Can't draw from empty discard pile"));
+            Err("Can't draw from empty discard pile".to_string())
         } else {
             if amount > discard_size {
                 return Err(format!(
                     "Draw amount ({amount}) greater than discard pile size ({discard_size})"
                 ));
             }
-            return Ok(self.discard_pile.split_off(discard_size - amount));
+            Ok(self.discard_pile.split_off(discard_size - amount))
         }
     }
 

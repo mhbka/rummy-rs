@@ -19,11 +19,11 @@ mod tests {
         // You might want to make this an error condition in the future
         match result {
             Ok(meld) => {
-                println!("Duplicate indices created meld: {:?}", meld);
+                println!("Duplicate indices created meld: {meld:?}");
                 // Document what type of meld was created
             }
             Err(e) => {
-                println!("Duplicate indices failed with: {:?}", e);
+                println!("Duplicate indices failed with: {e:?}");
                 // Document what error was returned
             }
         }
@@ -88,7 +88,7 @@ mod tests {
         // This might work (if all cards have same rank) or fail - documents behavior
         match result {
             Ok(set) => assert_eq!(set.cards().len(), 8),
-            Err(e) => println!("Large set creation failed: {:?}", e),
+            Err(e) => println!("Large set creation failed: {e:?}"),
         }
     }
 
@@ -139,8 +139,8 @@ mod tests {
         let high_result = Run::new(&mut high_ace_cards, &indices);
 
         // Document what your implementation does with Aces
-        println!("Ace-low run result: {:?}", low_result);
-        println!("Ace-high run result: {:?}", high_result);
+        println!("Ace-low run result: {low_result:?}");
+        println!("Ace-high run result: {high_result:?}");
 
         // Test wraparound (K-A-2) - this should fail in most Rummy variants
         let mut wraparound_cards = vec![
@@ -224,7 +224,7 @@ mod tests {
                 assert_eq!(set.cards().len(), 3);
                 println!("Identical cards formed valid set");
             }
-            Err(e) => println!("Identical cards failed: {:?}", e),
+            Err(e) => println!("Identical cards failed: {e:?}"),
         }
     }
 
@@ -247,7 +247,7 @@ mod tests {
         // You might want to add validation to ensure all cards use the same config
         match result {
             Ok(_) => println!("Mixed configs allowed"),
-            Err(e) => println!("Mixed configs rejected: {:?}", e),
+            Err(e) => println!("Mixed configs rejected: {e:?}"),
         }
     }
 }

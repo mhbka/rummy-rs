@@ -131,7 +131,7 @@ mod tests {
         let mut indices = vec![0, 1, 2];
         let run = Run::new(&mut cards, &mut indices);
 
-        assert!(cards.len() == 0);
+        assert!(cards.is_empty());
         assert!(run.is_ok());
         assert!(run.unwrap().cards() == &backup_cards);
     }
@@ -192,7 +192,7 @@ mod tests {
         let run = Run::new(&mut cards, &mut indices);
 
         assert!(run.is_ok());
-        assert!(cards.len() == 0);
+        assert!(cards.is_empty());
         assert!(
             run.unwrap().cards().iter().collect::<HashSet<_>>()
                 == backup_cards.iter().collect::<HashSet<_>>()
@@ -226,7 +226,7 @@ mod tests {
         let mut indices = vec![0, 1, 2];
         let run = Run::new(&mut cards, &mut indices);
 
-        assert!(cards.len() == 0);
+        assert!(cards.is_empty());
         assert!(run.is_ok());
         assert!(run.unwrap().cards() == &backup_cards);
     }
@@ -312,7 +312,7 @@ mod tests {
 
         assert!(run.layoff_card(&mut layoff_cards, 0).is_ok());
         assert!(run.layoff_card(&mut layoff_cards, 0).is_ok());
-        assert!(layoff_cards.len() == 0);
+        assert!(layoff_cards.is_empty());
         assert!(
             run.cards()
                 == &vec![
@@ -382,7 +382,7 @@ mod tests {
         }];
 
         assert!(run.layoff_card(&mut card, 0).is_ok());
-        assert!(card.len() == 0);
+        assert!(card.is_empty());
         assert!(
             run.cards()
                 == &vec![

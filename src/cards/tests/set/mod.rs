@@ -100,7 +100,7 @@ mod tests {
         let mut indices = vec![0, 1, 2];
         let set = Set::new(&mut cards, &mut indices);
 
-        assert!(cards.len() == 0);
+        assert!(cards.is_empty());
         assert!(set.is_ok());
         assert!(set.unwrap().cards() == &backup_cards);
     }
@@ -135,7 +135,7 @@ mod tests {
         let mut indices = vec![2, 0, 3, 1]; // in the wrong order
         let set = Set::new(&mut cards, &mut indices);
 
-        assert!(cards.len() == 0);
+        assert!(cards.is_empty());
         assert!(set.is_ok());
         assert!(set.unwrap().cards().iter().collect::<HashSet<_>>() == backup_cards_set);
         // since order is different from in `cards`, just check existence of elements
@@ -168,7 +168,7 @@ mod tests {
         let set = Set::new(&mut cards, &mut indices);
 
         assert!(set.is_ok());
-        assert!(cards.len() == 0);
+        assert!(cards.is_empty());
         assert!(set.unwrap().cards() == &backup_cards);
     }
 
@@ -232,7 +232,7 @@ mod tests {
         }];
 
         assert!(set.layoff_card(&mut layoff_card, 0).is_ok());
-        assert!(layoff_card.len() == 0);
+        assert!(layoff_card.is_empty());
         assert!(
             set.cards()
                 == &vec![
@@ -292,7 +292,7 @@ mod tests {
         }];
 
         assert!(set.layoff_card(&mut card, 0).is_ok());
-        assert!(card.len() == 0);
+        assert!(card.is_empty());
         assert!(
             set.cards()
                 == &vec![
@@ -429,7 +429,7 @@ mod tests {
         assert!(set.layoff_card(&mut layoff_cards, 0).is_ok());
         assert!(set.layoff_card(&mut layoff_cards, 0).is_ok());
         assert!(set.layoff_card(&mut layoff_cards, 0).is_ok());
-        assert!(layoff_cards.len() == 0);
+        assert!(layoff_cards.is_empty());
         assert!(set.cards() == &set_cards);
     }
 }

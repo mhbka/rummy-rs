@@ -119,7 +119,7 @@ impl Card {
 /// Equality impls
 impl PartialEq for Card {
     fn eq(&self, other: &Self) -> bool {
-        return self.rank == other.rank && self.suit == other.suit;
+        self.rank == other.rank && self.suit == other.suit
     }
 }
 
@@ -149,7 +149,7 @@ impl PartialOrd for Card {
 impl Debug for Card {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("")
-            .field("Card", &format!("{}", self))
+            .field("Card", &format!("{self}"))
             .finish()
     }
 }

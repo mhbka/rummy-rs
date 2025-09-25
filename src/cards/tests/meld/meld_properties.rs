@@ -165,7 +165,7 @@ mod tests {
         let meld = Meld::new(&mut cards, &indices).unwrap();
 
         // Verify that Debug is implemented (this will compile-fail if not)
-        let debug_str = format!("{:?}", meld);
+        let debug_str = format!("{meld:?}");
         assert!(!debug_str.is_empty());
     }
 }

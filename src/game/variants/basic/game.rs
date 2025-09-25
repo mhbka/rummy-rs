@@ -69,7 +69,7 @@ impl BasicRummyGame {
             deck_size += deck_config.pack_count * 2;
         }
 
-        let min_draw_size = (active_players * deal_amount) + (1 * active_players * draw_amount);
+        let min_draw_size = (active_players * deal_amount) + (active_players * draw_amount);
 
         match deck_size < min_draw_size {
             true => Err(GameSetupError::NotEnoughCards),
@@ -112,7 +112,7 @@ impl Game for BasicRummyGame {
     }
 
     fn add_player(&mut self, player_id: usize) -> Result<(), GameError> {
-        return match self.state.players.iter().find(|p| p.id == player_id) {
+        match self.state.players.iter().find(|p| p.id == player_id) {
             Some(_) => Err(GameError::AddedPlayerAlreadyExists),
             None => {
                 let new_player = Player {
@@ -125,7 +125,7 @@ impl Game for BasicRummyGame {
                 self.state.players.push(new_player);
                 Ok(())
             }
-        };
+        }
     }
 
     fn rearrange_player_hand(
@@ -140,7 +140,7 @@ impl Game for BasicRummyGame {
         match self.state.players.iter_mut().find(|p| p.id == player_id) {
             Some(player) => {
                 // check that player has cards in hand
-                if player.cards.len() == 0 {
+                if player.cards.is_empty() {
                     return Err(GameError::FailedHandRearrangement);
                 }
                 let deck_config = player.cards[0].deck_config();
@@ -171,7 +171,7 @@ impl Game for BasicRummyGame {
                     Err(GameError::FailedHandRearrangement)
                 }
             }
-            None => return Err(GameError::PlayerDoesntExist),
+            None => Err(GameError::PlayerDoesntExist),
         }
     }
 

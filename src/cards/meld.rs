@@ -168,7 +168,7 @@ impl Set {
 
 impl Meldable for Set {
     fn new(hand_cards: &mut Vec<Card>, indices: &[usize]) -> Result<Self, MeldError> {
-        Self::valid(&hand_cards, indices)?;
+        Self::valid(hand_cards, indices)?;
 
         let cards = indices
             .iter()
@@ -288,7 +288,7 @@ impl Run {
 
 impl Meldable for Run {
     fn new(hand_cards: &mut Vec<Card>, indices: &[usize]) -> Result<Self, MeldError> {
-        Self::valid(&hand_cards, indices)?;
+        Self::valid(hand_cards, indices)?;
 
         let cards = indices
             .iter()
@@ -391,7 +391,7 @@ impl Meldable for Run {
         // see if card can be added at the bottom of the run...
         if layoff_card.same_suit_consecutive_rank(&self.cards[0]) {
             self.cards.insert(0, hand_cards.remove(index));
-            return Ok(());
+            Ok(())
         }
         // ...or at the top (the only 2 possible places)
         else if self.cards[self.cards.len() - 1].same_suit_consecutive_rank(layoff_card) {

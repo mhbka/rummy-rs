@@ -47,7 +47,7 @@ impl SerializablePlayer {
         let melds = player
             .melds
             .iter()
-            .map(|m| SerializableMeld::from_meld(m))
+            .map(SerializableMeld::from_meld)
             .collect();
         Self {
             id: player.id,

@@ -121,15 +121,12 @@ impl App {
     }
 
     fn handle_main_menu_input(&mut self, key: KeyCode) {
-        match key {
-            KeyCode::Enter => {
-                if let Err(e) = self.setup_game() {
-                    self.state = AppState::Error(format!("Failed to setup game: {:?}", e));
-                } else {
-                    self.update_game_state();
-                }
+        if key == KeyCode::Enter {
+            if let Err(e) = self.setup_game() {
+                self.state = AppState::Error(format!("Failed to setup game: {e:?}"));
+            } else {
+                self.update_game_state();
             }
-            _ => {}
         }
     }
 
@@ -139,18 +136,18 @@ impl App {
                 if let Some(ref mut game) = self.game {
                     let action = GameAction::DrawDeck(DrawDeckAction {});
                     if let Err(e) = game.execute_action(action) {
-                        self.error_message = Some(format!("Draw failed: {:?}", e));
+                        self.error_message = Some(format!("Draw failed: {e:?}"));
                     }
                     self.update_game_state();
                 }
             }
             KeyCode::Char('2') => {
                 if let Some(ref mut game) = self.game {
-                    if game.get_state().deck().discard_pile().len() > 0 {
+                    if !game.get_state().deck().discard_pile().is_empty() {
                         let action =
                             GameAction::DrawDiscardPile(DrawDiscardPileAction { count: Some(1) });
                         if let Err(e) = game.execute_action(action) {
-                            self.error_message = Some(format!("Draw failed: {:?}", e));
+                            self.error_message = Some(format!("Draw failed: {e:?}"));
                         }
                         self.update_game_state();
                     } else {
@@ -295,28 +292,22 @@ impl App {
     }
 
     fn handle_round_end_input(&mut self, key: KeyCode) {
-        match key {
-            KeyCode::Enter => {
-                if let Some(ref mut game) = self.game {
-                    if let Err(e) = game.next_round() {
-                        self.state =
-                            AppState::Error(format!("Failed to start next round: {:?}", e));
-                    } else {
-                        self.update_game_state();
-                    }
+        if key == KeyCode::Enter {
+            if let Some(ref mut game) = self.game {
+                if let Err(e) = game.next_round() {
+                    self.state =
+                        AppState::Error(format!("Failed to start next round: {e:?}"));
+                } else {
+                    self.update_game_state();
                 }
             }
-            _ => {}
         }
     }
 
     fn handle_game_end_input(&mut self, key: KeyCode) {
-        match key {
-            KeyCode::Enter => {
-                self.state = AppState::MainMenu;
-                self.game = None;
-            }
-            _ => {}
+        if key == KeyCode::Enter {
+            self.state = AppState::MainMenu;
+            self.game = None;
         }
     }
 
@@ -327,7 +318,7 @@ impl App {
                 current_player.cards().iter().map(|c| c.data()).collect();
             current_player_hand.sort();
             game.rearrange_player_hand(current_player.id(), current_player_hand)
-                .expect(&format!("{:?}", game.get_state().phase()));
+                .unwrap_or_else(|_| panic!("{:?}", game.get_state().phase()));
             self.error_message = Some("Sorted hand!".into());
             self.update_game_state();
         }
@@ -346,7 +337,7 @@ impl App {
                     self.error_message = Some("Layoff successful!".to_string());
                 }
                 Err(e) => {
-                    self.error_message = Some(format!("Layoff failed: {:?}", e));
+                    self.error_message = Some(format!("Layoff failed: {e:?}"));
                 }
             }
             self.update_game_state();
@@ -364,7 +355,7 @@ impl App {
                     self.error_message = Some("Meld formed successfully!".to_string());
                 }
                 Err(e) => {
-                    self.error_message = Some(format!("Meld failed: {:?}", e));
+                    self.error_message = Some(format!("Meld failed: {e:?}"));
                 }
             }
             self.selected_cards.clear();
@@ -390,7 +381,7 @@ impl App {
                     self.error_message = Some("Discard successful!".to_string());
                 }
                 Err(e) => {
-                    self.error_message = Some(format!("Discard failed: {:?}", e));
+                    self.error_message = Some(format!("Discard failed: {e:?}"));
                 }
             }
             self.update_game_state();

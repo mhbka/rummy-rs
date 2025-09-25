@@ -48,7 +48,7 @@ fn history_is_correct() {
         round_history[0].entry,
         GameInteractions::Action(GameAction::DrawDeck(DrawDeckAction {}))
     );
-    assert_eq!(round_history[0].successful, true);
+    assert!(round_history[0].successful);
 
     assert_eq!(
         round_history[1].entry,
@@ -57,7 +57,7 @@ fn history_is_correct() {
             new_arrangement: hand
         }
     );
-    assert_eq!(round_history[1].successful, true);
+    assert!(round_history[1].successful);
 
     assert_eq!(
         round_history[2].entry,
@@ -65,7 +65,7 @@ fn history_is_correct() {
             card_indices: indices
         }))
     );
-    assert_eq!(round_history[2].successful, true);
+    assert!(round_history[2].successful);
 
     assert_eq!(
         round_history[3].entry,
@@ -74,7 +74,7 @@ fn history_is_correct() {
             declare_going_out: None
         }))
     );
-    assert_eq!(round_history[3].successful, false);
+    assert!(!round_history[3].successful);
 
     assert_eq!(
         round_history[4].entry,
@@ -83,7 +83,7 @@ fn history_is_correct() {
             declare_going_out: None
         }))
     );
-    assert_eq!(round_history[4].successful, true);
+    assert!(round_history[4].successful);
 
     assert_eq!(round_history.len(), 5);
 }
