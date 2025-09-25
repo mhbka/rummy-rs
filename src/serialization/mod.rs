@@ -1,3 +1,3 @@
 mod cards;
-mod player;
 mod game;
+mod player;

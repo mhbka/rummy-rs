@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod tests {    
+mod tests {
     use crate::cards::{
         card::Card,
         deck::DeckConfig,
@@ -159,7 +159,7 @@ mod tests {
         let backup_cards = cards.clone();
         let indices = vec![2, 0, 1]; // in the wrong order
         let run = Run::new(&mut cards, &indices);
-        
+
         assert!(run.is_err());
         assert!(cards.len() == 3);
     }
@@ -190,10 +190,13 @@ mod tests {
         backup_cards.sort();
         let mut indices = vec![0, 1, 2];
         let run = Run::new(&mut cards, &mut indices);
-        
+
         assert!(run.is_ok());
         assert!(cards.len() == 0);
-        assert!(run.unwrap().cards().iter().collect::<HashSet<_>>() == backup_cards.iter().collect::<HashSet<_>>());
+        assert!(
+            run.unwrap().cards().iter().collect::<HashSet<_>>()
+                == backup_cards.iter().collect::<HashSet<_>>()
+        );
     }
 
     #[test]

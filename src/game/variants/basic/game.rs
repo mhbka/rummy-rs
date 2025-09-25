@@ -1,5 +1,22 @@
+use crate::{
+    cards::{
+        card::{Card, CardData},
+        deck::DeckConfig,
+        suit_rank::Rank,
+    },
+    game::{
+        action::GameAction,
+        error::{ActionError, GameError, GameSetupError},
+        game::Game,
+        rules::GameRules,
+        state::{GamePhase, GameState},
+        variants::basic::{
+            config::BasicConfig, rules::BasicRules, score::BasicScore, state::BasicState,
+        },
+    },
+    player::Player,
+};
 use std::collections::HashMap;
-use crate::{cards::{card::{Card, CardData}, deck::DeckConfig, suit_rank::Rank}, game::{action::GameAction, error::{ActionError, GameError, GameSetupError}, game::Game, rules::GameRules, state::{GamePhase, GameState}, variants::basic::{config::BasicConfig, rules::BasicRules, score::BasicScore, state::BasicState}}, player::Player};
 
 /// The basic/standard form of Rummy.
 #[derive(Clone, Debug, PartialEq)]
@@ -10,24 +27,17 @@ pub struct BasicRummyGame {
 
 impl BasicRummyGame {
     /// Initialize the Rummy game.
-    /// 
+    ///
     /// Returns an `Err` if there is only 1 player,
     /// or there aren't enough cards for all players to be dealt + draw from the deck at least once.
     pub fn new(
-        player_ids: Vec<usize>, 
-        config: BasicConfig, 
-        deck_config: DeckConfig
+        player_ids: Vec<usize>,
+        config: BasicConfig,
+        deck_config: DeckConfig,
     ) -> Result<Self, GameSetupError> {
-        let state = GameState::initialize(
-            player_ids, 
-            deck_config, 
-            BasicState {}
-        );
+        let state = GameState::initialize(player_ids, deck_config, BasicState {});
         let rules = BasicRules::new(config.clone());
-        let game = Self {
-            state,
-            rules,
-        };
+        let game = Self { state, rules };
 
         game.validate_setup()?;
 
@@ -36,11 +46,13 @@ impl BasicRummyGame {
 
     /// Validates setup of the game.
     /// We call this when first initializing the game, and before starting every new round.
-    /// 
+    ///
     /// At the moment, this just checks that we can deal cards to all (active) players and have enough left in the stock for 1 iteration of draws.
     fn validate_setup(&self) -> Result<(), GameSetupError> {
         // active players are those who are active, or just joined the game
-        let active_players = self.state.players
+        let active_players = self
+            .state
+            .players
             .iter()
             .filter(|p| p.active || p.joined_in_round == self.state.current_round)
             .count();
@@ -61,7 +73,7 @@ impl BasicRummyGame {
 
         match deck_size < min_draw_size {
             true => Err(GameSetupError::NotEnoughCards),
-            false => Ok(())
+            false => Ok(()),
         }
     }
 }
@@ -78,19 +90,18 @@ impl Game for BasicRummyGame {
     }
 
     fn quit_player(&mut self, player_id: usize) -> Result<(), GameError> {
-        match self.state.players
-            .iter_mut()
-            .find(|p| p.id == player_id)
-        { 
+        match self.state.players.iter_mut().find(|p| p.id == player_id) {
             Some(player) => {
                 player.active = false;
                 Ok(())
-            },
-            None => Err(GameError::PlayerDoesntExist)
+            }
+            None => Err(GameError::PlayerDoesntExist),
         }?;
 
         // End the game if only 1 active player is remaining
-        let num_active_players = self.state.players
+        let num_active_players = self
+            .state
+            .players
             .iter()
             .fold(0, |acc, p| acc + p.active as usize);
         if num_active_players < 2 {
@@ -101,10 +112,7 @@ impl Game for BasicRummyGame {
     }
 
     fn add_player(&mut self, player_id: usize) -> Result<(), GameError> {
-        return match self.state.players
-            .iter()
-            .find(|p| p.id == player_id)
-        { 
+        return match self.state.players.iter().find(|p| p.id == player_id) {
             Some(_) => Err(GameError::AddedPlayerAlreadyExists),
             None => {
                 let new_player = Player {
@@ -112,23 +120,24 @@ impl Game for BasicRummyGame {
                     cards: Vec::new(),
                     melds: Vec::new(),
                     active: false,
-                    joined_in_round: self.state.current_round
+                    joined_in_round: self.state.current_round,
                 };
                 self.state.players.push(new_player);
                 Ok(())
             }
-        }
+        };
     }
 
-    fn rearrange_player_hand(&mut self, player_id: usize, new_arrangement: Vec<CardData>) -> Result<(), GameError> {
+    fn rearrange_player_hand(
+        &mut self,
+        player_id: usize,
+        new_arrangement: Vec<CardData>,
+    ) -> Result<(), GameError> {
         if self.state.phase != GamePhase::Draw && self.state.phase != GamePhase::Play {
             return Err(GameError::WrongGamePhase);
         }
-        
-        match self.state.players
-            .iter_mut()
-            .find(|p| p.id == player_id)
-        {
+
+        match self.state.players.iter_mut().find(|p| p.id == player_id) {
             Some(player) => {
                 // check that player has cards in hand
                 if player.cards.len() == 0 {
@@ -154,16 +163,15 @@ impl Game for BasicRummyGame {
                         .map(|c| Card {
                             rank: c.rank,
                             suit: c.suit,
-                            deck_config: deck_config.clone()
+                            deck_config: deck_config.clone(),
                         })
                         .collect();
                     Ok(())
-                }
-                else {
+                } else {
                     Err(GameError::FailedHandRearrangement)
                 }
-            },
-            None => return Err(GameError::PlayerDoesntExist)
+            }
+            None => return Err(GameError::PlayerDoesntExist),
         }
     }
 
@@ -171,19 +179,21 @@ impl Game for BasicRummyGame {
         if self.state.phase != GamePhase::RoundEnd {
             return Err(GameError::WrongGamePhase);
         }
-        
+
         self.validate_setup()?;
 
-        if self.state.current_round != 0 {  
+        if self.state.current_round != 0 {
             let round_score = self.rules.calculate_round_score(&self.state)?;
-            self.state.round_scores.insert(self.state.current_round, round_score);
+            self.state
+                .round_scores
+                .insert(self.state.current_round, round_score);
         }
-        
+
         let cards_to_deal = self.rules.cards_to_deal(&self.state);
         let starting_player_index = self.rules.starting_player_index(&self.state);
-        self.state.start_new_round(cards_to_deal, starting_player_index)?;
+        self.state
+            .start_new_round(cards_to_deal, starting_player_index)?;
 
         Ok(())
     }
 }
-

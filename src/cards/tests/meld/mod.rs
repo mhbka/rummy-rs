@@ -1,8 +1,8 @@
+mod edge_cases;
 mod errors;
 mod meld_creation;
 mod meld_layoff;
 mod meld_properties;
-mod edge_cases;
 
 use super::super::deck::DeckConfig;
 use super::super::{
@@ -35,7 +35,12 @@ pub fn create_set_cards(rank: Rank, suits: &[Suit], config: Arc<DeckConfig>) -> 
 }
 
 /// Helper to create a run of cards in the same suit
-pub fn create_run_cards(start_rank: Rank, length: usize, suit: Suit, config: Arc<DeckConfig>) -> Vec<Card> {
+pub fn create_run_cards(
+    start_rank: Rank,
+    length: usize,
+    suit: Suit,
+    config: Arc<DeckConfig>,
+) -> Vec<Card> {
     // You'll need to implement rank iteration logic based on your Rank enum
     // This is a simplified version
     (0..length)

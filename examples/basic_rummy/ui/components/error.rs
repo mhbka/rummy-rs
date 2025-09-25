@@ -9,7 +9,10 @@ use rummy::cards::meld::Meldable;
 
 pub fn render_error(f: &mut Frame, area: Rect, error_msg: &str) {
     let content = vec![
-        Line::from(Span::styled("Error!", Style::default().add_modifier(Modifier::BOLD).fg(Color::Red))),
+        Line::from(Span::styled(
+            "Error!",
+            Style::default().add_modifier(Modifier::BOLD).fg(Color::Red),
+        )),
         Line::from(""),
         Line::from(error_msg),
     ];

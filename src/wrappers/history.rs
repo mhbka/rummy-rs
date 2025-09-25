@@ -1,6 +1,16 @@
-use std::collections::HashMap;
-use crate::{cards::{card::CardData, deck::DeckConfig}, game::{action::{GameAction, GameInteractions}, error::{ActionError, GameError, GameSetupError}, game::Game, rules::GameRules, state::GameState, variants::basic::{config::BasicConfig, game::BasicRummyGame}}};
+use crate::{
+    cards::{card::CardData, deck::DeckConfig},
+    game::{
+        action::{GameAction, GameInteractions},
+        error::{ActionError, GameError, GameSetupError},
+        game::Game,
+        rules::GameRules,
+        state::GameState,
+        variants::basic::{config::BasicConfig, game::BasicRummyGame},
+    },
+};
 use chrono::{DateTime, Utc};
+use std::collections::HashMap;
 
 /// An entry in the game's history.
 #[derive(Clone, Debug)]
@@ -8,12 +18,12 @@ use chrono::{DateTime, Utc};
 pub struct HistoryEntry {
     pub entry: GameInteractions,
     pub time: DateTime<Utc>,
-    pub successful: bool
+    pub successful: bool,
 }
 
 /// This wrapper tracks every interaction with the game,
 /// as well as the initial game state at the start of each round.
-/// 
+///
 /// This means one can construct the state of the game at each step.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -23,7 +33,7 @@ pub struct History<G: Game + Clone> {
     /// The map of round numbers to initial round states.
     initial_round_states: HashMap<usize, G>,
     /// The map of round numbers to its histories.
-    round_histories: HashMap<usize, Vec<HistoryEntry>>
+    round_histories: HashMap<usize, Vec<HistoryEntry>>,
 }
 
 impl<G: Game + Clone> History<G> {
@@ -43,23 +53,29 @@ impl<G: Game + Clone> History<G> {
     }
 
     /// Get a mutable ref to the current round's history.
-    /// 
+    ///
     /// ### Panics
-    /// If the current round's history doesn't exist. 
+    /// If the current round's history doesn't exist.
     /// This could only happen if you called this after `current_game.next_round()` but before creating the fresh history for that round.
-    /// 
+    ///
     /// Beware of that!
     fn get_current_round_history(&mut self) -> &mut Vec<HistoryEntry> {
         // UNWRAP: This is fine as long as consistent internal state is kept.
         // This mostly means a `History` should only be created with a new `G`, never one in progress.
         let round = self.current_game.get_state().current_round;
-        self.round_histories.get_mut(&round).expect("There should always be a round history")
+        self.round_histories
+            .get_mut(&round)
+            .expect("There should always be a round history")
     }
 }
 
 impl History<BasicRummyGame> {
     /// Create a basic Rummy game with history.
-    pub fn new(player_ids: Vec<usize>, config: BasicConfig, deck_config: DeckConfig) -> Result<Self, GameSetupError> {
+    pub fn new(
+        player_ids: Vec<usize>,
+        config: BasicConfig,
+        deck_config: DeckConfig,
+    ) -> Result<Self, GameSetupError> {
         let game = BasicRummyGame::new(player_ids, config, deck_config)?;
 
         let mut initial_round_states = HashMap::new();
@@ -68,13 +84,11 @@ impl History<BasicRummyGame> {
         let mut round_histories = HashMap::new();
         round_histories.insert(0, vec![]);
 
-        Ok(
-            Self {
-                current_game: game,
-                initial_round_states,
-                round_histories
-            }
-        )
+        Ok(Self {
+            current_game: game,
+            initial_round_states,
+            round_histories,
+        })
     }
 }
 
@@ -86,13 +100,15 @@ impl<G: Game + Clone> Game for History<G> {
         let entry = HistoryEntry {
             entry: GameInteractions::Action(action),
             time: Utc::now(),
-            successful: result.is_ok()
+            successful: result.is_ok(),
         };
         self.get_current_round_history().push(entry);
         result
     }
 
-    fn get_state(&self) -> &GameState<<<Self as Game>::Rules as GameRules>::VariantScore, Self::Rules> {
+    fn get_state(
+        &self,
+    ) -> &GameState<<<Self as Game>::Rules as GameRules>::VariantScore, Self::Rules> {
         self.current_game.get_state()
     }
 
@@ -101,7 +117,7 @@ impl<G: Game + Clone> Game for History<G> {
         let entry = HistoryEntry {
             entry: GameInteractions::PlayerQuit { player_id },
             time: Utc::now(),
-            successful: result.is_ok()
+            successful: result.is_ok(),
         };
         self.get_current_round_history().push(entry);
         result
@@ -112,18 +128,27 @@ impl<G: Game + Clone> Game for History<G> {
         let entry = HistoryEntry {
             entry: GameInteractions::PlayerJoin { player_id },
             time: Utc::now(),
-            successful: result.is_ok()
+            successful: result.is_ok(),
         };
         self.get_current_round_history().push(entry);
         result
     }
 
-    fn rearrange_player_hand(&mut self, player_id: usize, new_arrangement: Vec<CardData>) -> Result<(), GameError> {
-        let result = self.current_game.rearrange_player_hand(player_id, new_arrangement.clone());
+    fn rearrange_player_hand(
+        &mut self,
+        player_id: usize,
+        new_arrangement: Vec<CardData>,
+    ) -> Result<(), GameError> {
+        let result = self
+            .current_game
+            .rearrange_player_hand(player_id, new_arrangement.clone());
         let entry = HistoryEntry {
-            entry: GameInteractions::HandRearrangement { player_id, new_arrangement },
+            entry: GameInteractions::HandRearrangement {
+                player_id,
+                new_arrangement,
+            },
             time: Utc::now(),
-            successful: result.is_ok()
+            successful: result.is_ok(),
         };
         self.get_current_round_history().push(entry);
         result
@@ -137,8 +162,9 @@ impl<G: Game + Clone> Game for History<G> {
             let new_history = Vec::new();
             let round = self.current_game.get_state().current_round;
             self.round_histories.insert(round, new_history);
-            self.initial_round_states.insert(round, self.current_game.clone());
-        }   
+            self.initial_round_states
+                .insert(round, self.current_game.clone());
+        }
 
         result
     }

@@ -1,3 +1,4 @@
+use crate::app::{App, InputMode};
 use ratatui::{
     layout::Rect,
     text::Line,
@@ -5,7 +6,6 @@ use ratatui::{
     Frame,
 };
 use rummy::{cards::meld::Meldable, game::game::Game};
-use crate::app::{App, InputMode};
 
 pub fn render_layoff_input(f: &mut Frame, area: Rect, app: &App) {
     let prompt = match app.input_mode {
@@ -14,34 +14,29 @@ pub fn render_layoff_input(f: &mut Frame, area: Rect, app: &App) {
         InputMode::LayOffTargetMeld => "Enter target meld index:",
         _ => "Lay off input:",
     };
-    
+
     let game = match &app.game {
         Some(game) => game,
-        None => return
+        None => return,
     };
     let gamestate = game.get_state();
 
     let mut layoff_progress = vec![];
     if let Some(i) = app.layoff_data.card_index {
-        let card = &gamestate
-            .get_current_player()
-            .unwrap()
-            .cards()[i];
-        layoff_progress.push(
-            Line::from(format!("Card: {card}"))
-        );
+        let card = &gamestate.get_current_player().unwrap().cards()[i];
+        layoff_progress.push(Line::from(format!("Card: {card}")));
     }
     if let Some(i) = app.layoff_data.target_player_index {
         let player = &gamestate.players()[i];
-        layoff_progress.push(
-            Line::from(format!("Player ID: {} (melds: {})", player.id(), player.melds().len()))
-        );
+        layoff_progress.push(Line::from(format!(
+            "Player ID: {} (melds: {})",
+            player.id(),
+            player.melds().len()
+        )));
     }
     if let Some(i) = app.layoff_data.target_meld_index {
         let meld = &gamestate.players()[app.layoff_data.target_player_index.unwrap()].melds()[i];
-        layoff_progress.push(
-            Line::from(format!("Meld: {meld:?}"))
-        );
+        layoff_progress.push(Line::from(format!("Meld: {meld:?}")));
     }
 
     let input = vec![

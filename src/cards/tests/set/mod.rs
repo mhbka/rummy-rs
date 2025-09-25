@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod tests {    
+mod tests {
     use crate::cards::{
         card::Card,
         deck::DeckConfig,

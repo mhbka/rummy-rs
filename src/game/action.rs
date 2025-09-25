@@ -5,14 +5,20 @@ use crate::cards::card::CardData;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum GameInteractions {
     Action(GameAction),
-    PlayerJoin { player_id: usize },
-    PlayerQuit { player_id: usize },
-    HandRearrangement { player_id: usize, new_arrangement: Vec<CardData> },
+    PlayerJoin {
+        player_id: usize,
+    },
+    PlayerQuit {
+        player_id: usize,
+    },
+    HandRearrangement {
+        player_id: usize,
+        new_arrangement: Vec<CardData>,
+    },
 }
 
-
 /// The possible actions taken in a Rummy game.
-/// 
+///
 /// Each action aims to include all possible data required by any (mainstream) Rummy variant.
 /// Each variant can use just the data that it requires, and ignore/return errors for unnecessary/invalid data.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -66,7 +72,7 @@ pub struct FormMeldAction {
 }
 
 /// Represents forming multiple melds at once.
-/// 
+///
 /// ## Note
 /// The user is responsible for ensuring no overlapping of card indexes for each meld.
 /// If there are overlaps, an error will be returned when attempting to execute this action.

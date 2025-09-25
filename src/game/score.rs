@@ -7,7 +7,7 @@ pub struct RoundScore<P: VariantPlayerScore> {
     /// Map of player IDs to their scores.
     pub player_scores: HashMap<usize, P>,
     /// The ID of the player who won.
-    pub winner_id: usize
+    pub winner_id: usize,
 }
 
 #[cfg(feature = "serde")]

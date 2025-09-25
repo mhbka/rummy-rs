@@ -1,3 +1,4 @@
+use crate::app::App;
 use ratatui::{
     layout::Rect,
     style::{Modifier, Style},
@@ -6,11 +7,13 @@ use ratatui::{
     Frame,
 };
 use rummy::cards::meld::Meldable;
-use crate::app::App;
 
 pub fn render_meld_input(f: &mut Frame, area: Rect, app: &App) {
     let content = vec![
-        Line::from(Span::styled("Form Meld Action", Style::default().add_modifier(Modifier::BOLD))),
+        Line::from(Span::styled(
+            "Form Meld Action",
+            Style::default().add_modifier(Modifier::BOLD),
+        )),
         Line::from(""),
         Line::from("Enter card indices to add to meld (press D when done):"),
         Line::from(format!("> {}", app.input_buffer)),

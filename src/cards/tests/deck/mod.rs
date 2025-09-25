@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use crate::cards::suit_rank::Rank;
     use crate::cards::deck::Deck;
     use crate::cards::deck::DeckConfig;
+    use crate::cards::suit_rank::Rank;
 
     #[test]
     fn default_deck_config() {

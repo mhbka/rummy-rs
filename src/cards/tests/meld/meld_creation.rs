@@ -1,13 +1,17 @@
-#[cfg(test)]    
+#[cfg(test)]
 mod tests {
     use super::super::*;
 
     #[test]
     fn test_valid_set_creation() {
         let cfg = basic_config();
-        let mut cards = create_set_cards(Rank::Ace, &[Suit::Clubs, Suit::Diamonds, Suit::Hearts], cfg.clone());
+        let mut cards = create_set_cards(
+            Rank::Ace,
+            &[Suit::Clubs, Suit::Diamonds, Suit::Hearts],
+            cfg.clone(),
+        );
         let indices = vec![0, 1, 2];
-        
+
         let meld = Meld::new(&mut cards, &indices);
         assert!(meld.is_ok());
         assert!(meld.unwrap().is_set());
@@ -22,7 +26,7 @@ mod tests {
             create_card(Rank::Three, Suit::Clubs, cfg.clone()),
         ];
         let indices = vec![0, 1, 2];
-        
+
         let meld = Meld::new(&mut cards, &indices);
         assert!(meld.is_ok());
         assert!(meld.unwrap().is_run());
@@ -32,12 +36,12 @@ mod tests {
     fn test_max_length_set() {
         let cfg = basic_config();
         let mut cards = create_set_cards(
-            Rank::Queen, 
-            &[Suit::Clubs, Suit::Diamonds, Suit::Hearts, Suit::Spades], 
-            cfg.clone()
+            Rank::Queen,
+            &[Suit::Clubs, Suit::Diamonds, Suit::Hearts, Suit::Spades],
+            cfg.clone(),
         );
         let indices = vec![0, 1, 2, 3];
-        
+
         let set = Set::new(&mut cards, &indices).unwrap();
         assert_eq!(set.cards().len(), 4);
         assert_eq!(set.rank(), Rank::Queen);
@@ -55,7 +59,7 @@ mod tests {
             create_card(Rank::Seven, Suit::Hearts, cfg.clone()),
         ];
         let indices = vec![0, 1, 2, 3, 4, 5];
-        
+
         let run = Run::new(&mut cards, &indices).unwrap();
         assert_eq!(run.cards().len(), 6);
         assert_eq!(run.suit(), Suit::Hearts);
@@ -72,9 +76,9 @@ mod tests {
         ];
         let indices = vec![0, 1, 2];
         let original_len = cards.len();
-        
+
         let _meld = Meld::new(&mut cards, &indices).unwrap();
-        
+
         assert_eq!(cards.len(), original_len - 3);
         assert_eq!(cards[0].rank, Rank::Two); // Only remaining card
     }
@@ -90,7 +94,7 @@ mod tests {
             create_card(Rank::Seven, Suit::Hearts, cfg.clone()),
         ];
         let indices = vec![0, 1, 2];
-        
+
         let meld = Meld::new(&mut cards, &indices).unwrap();
         // Based on your implementation, Set::new is tried first
         assert!(meld.is_set());
@@ -99,9 +103,13 @@ mod tests {
     #[test]
     fn test_unordered_indices() {
         let cfg = basic_config();
-        let mut cards = create_set_cards(Rank::King, &[Suit::Clubs, Suit::Diamonds, Suit::Hearts], cfg.clone());
+        let mut cards = create_set_cards(
+            Rank::King,
+            &[Suit::Clubs, Suit::Diamonds, Suit::Hearts],
+            cfg.clone(),
+        );
         let indices = vec![2, 0, 1]; // Out of order
-        
+
         let set = Set::new(&mut cards, &indices).unwrap();
         assert_eq!(set.cards().len(), 3);
         assert_eq!(set.rank(), Rank::King);

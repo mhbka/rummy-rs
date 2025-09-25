@@ -10,7 +10,7 @@ use std::{
 };
 
 /// The data of a card.
-/// 
+///
 /// Since a `Card` is not serializable, this type can instead be used for external interactions.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -20,7 +20,7 @@ pub struct CardData {
 }
 
 /// A card.
-/// 
+///
 /// This contains an `Arc` to the deck's `DeckConfig`, used for calculating ordering when taking
 /// into account custom high ranks (amongst other things),
 /// meaning it isn't (de)serializable. For that, use `CardData`.
@@ -34,9 +34,9 @@ pub struct Card {
 impl Card {
     /// Get the card's rank and suit.
     pub fn data(&self) -> CardData {
-        CardData { 
-            rank: self.rank, 
-            suit: self.suit 
+        CardData {
+            rank: self.rank,
+            suit: self.suit,
         }
     }
 
@@ -85,12 +85,12 @@ impl Card {
     pub fn score_value(&self) -> u8 {
         match self.rank {
             Rank::Jack | Rank::Queen | Rank::King => 10,
-            other => other as u8
+            other => other as u8,
         }
     }
 
-    /// Whether or not `other` has the same suit and the consecutive (relative) rank. 
-    /// 
+    /// Whether or not `other` has the same suit and the consecutive (relative) rank.
+    ///
     /// ## Examples
     /// - `high_rank = None`: (Two, Clubs) -> (Three, Clubs) = `true`
     /// - `high_rank = None`: (Two, Clubs) -> (Three, Spades) = `false`
@@ -111,7 +111,7 @@ impl Card {
         Self {
             deck_config,
             rank: card_data.rank,
-            suit: card_data.suit
+            suit: card_data.suit,
         }
     }
 }

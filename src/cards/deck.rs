@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use crate::cards::card::CardData;
+use std::sync::Arc;
 
 use super::card::Card;
 use super::suit_rank::{Rank, Suit};
@@ -7,22 +7,22 @@ use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
 use strum::IntoEnumIterator;
 
 /// Configurable values for a deck's behaviour.
-/// 
+///
 /// ### `shuffle_seed`
-/// Optional seed for shuffling, where `0` results in no shuffle. 
+/// Optional seed for shuffling, where `0` results in no shuffle.
 /// The default is a completely randomized shuffle.
-/// 
+///
 /// ### `pack_count`
 /// The number of card packs to include in the deck.
-/// 
+///
 /// ### `high_rank`
 /// Optional rank to override the highest rank.
-/// If set, the rank right after it becomes the lowest rank. 
-/// 
+/// If set, the rank right after it becomes the lowest rank.
+///
 /// For example, if this is `Five`, the lowest ranks would be `Six` -> `Seven` -> `Eight` ...
-/// 
+///
 /// The default is King.
-/// 
+///
 /// ### `wildcard_rank`
 /// Optional rank to denote as the wildcard (typically the Joker).
 /// The default is to have no wildcards.
@@ -111,9 +111,9 @@ impl Deck {
 
     /// Draw `amount` cards from the deck stock;
     /// automatically turns over from the discard pile if there wasn't enough cards.
-    /// 
-    /// If `amount` is still greater than the stock size, `Err` is returned. 
-    /// 
+    ///
+    /// If `amount` is still greater than the stock size, `Err` is returned.
+    ///
     /// ## Note
     /// If this errors, it is probably a serious issue.
     pub fn draw(&mut self, amount: usize) -> Result<Vec<Card>, String> {
@@ -123,7 +123,7 @@ impl Deck {
         if amount > self.stock.len() {
             return Err(format!(
                 "Draw amount ({amount}) greater than stock + discard pile size (technically shouldn't happen)"
-            ))
+            ));
         }
         let cards = self.stock.split_off(self.stock.len() - amount);
         Ok(cards)
@@ -142,8 +142,7 @@ impl Deck {
         let discard_size = self.discard_pile.len();
         if discard_size == 0 {
             return Err(format!("Can't draw from empty discard pile"));
-        } 
-        else {
+        } else {
             if amount > discard_size {
                 return Err(format!(
                     "Draw amount ({amount}) greater than discard pile size ({discard_size})"

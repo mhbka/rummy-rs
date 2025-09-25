@@ -1,3 +1,4 @@
+use crate::app::App;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -6,12 +7,11 @@ use ratatui::{
     Frame,
 };
 use rummy::{cards::meld::Meldable, game::game::Game};
-use crate::app::App;
 
 pub fn render_game_state(f: &mut Frame, area: Rect, app: &App) {
     if let Some(ref game) = app.game {
         let gamestate = game.get_state();
-        
+
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
@@ -19,7 +19,8 @@ pub fn render_game_state(f: &mut Frame, area: Rect, app: &App) {
 
         // Left side - Current player info
         let current_player = gamestate.get_current_player().unwrap();
-        let hand_text = current_player.cards()
+        let hand_text = current_player
+            .cards()
             .iter()
             .enumerate()
             .map(|(i, card)| card.to_string())
@@ -27,15 +28,36 @@ pub fn render_game_state(f: &mut Frame, area: Rect, app: &App) {
             .join(", ");
 
         let left_content = vec![
-            Line::from(Span::styled(format!("Round: {}", gamestate.current_round()), Style::default().fg(Color::Cyan))),
-            Line::from(Span::styled(format!("Current player ID: {}", gamestate.get_current_player().unwrap().id()), Style::default().fg(Color::Yellow))),
+            Line::from(Span::styled(
+                format!("Round: {}", gamestate.current_round()),
+                Style::default().fg(Color::Cyan),
+            )),
+            Line::from(Span::styled(
+                format!(
+                    "Current player ID: {}",
+                    gamestate.get_current_player().unwrap().id()
+                ),
+                Style::default().fg(Color::Yellow),
+            )),
             Line::from(""),
-            Line::from(Span::styled(format!("Your hand ({} cards):", gamestate.get_current_player().unwrap().cards().len()), Style::default().add_modifier(Modifier::BOLD))),
+            Line::from(Span::styled(
+                format!(
+                    "Your hand ({} cards):",
+                    gamestate.get_current_player().unwrap().cards().len()
+                ),
+                Style::default().add_modifier(Modifier::BOLD),
+            )),
             Line::from(hand_text),
             Line::from(""),
             Line::from(format!("Deck size: {}", gamestate.deck().stock().len())),
-            Line::from(format!("Discard pile size: {}", gamestate.deck().discard_pile().len())),
-            Line::from(format!("Top discard: {:?}", gamestate.deck().peek_discard_pile())),
+            Line::from(format!(
+                "Discard pile size: {}",
+                gamestate.deck().discard_pile().len()
+            )),
+            Line::from(format!(
+                "Top discard: {:?}",
+                gamestate.deck().peek_discard_pile()
+            )),
         ];
 
         let left_paragraph = Paragraph::new(left_content)
@@ -47,7 +69,11 @@ pub fn render_game_state(f: &mut Frame, area: Rect, app: &App) {
         let mut players_text = Vec::new();
         for player in gamestate.players() {
             if player.active() {
-                players_text.push(Line::from(format!("Player {}: {} cards", player.id(), player.cards().len())));
+                players_text.push(Line::from(format!(
+                    "Player {}: {} cards",
+                    player.id(),
+                    player.cards().len()
+                )));
                 for (i, meld) in player.melds().iter().enumerate() {
                     players_text.push(Line::from(format!("  Meld {}: {:?}", i, meld.cards())));
                 }

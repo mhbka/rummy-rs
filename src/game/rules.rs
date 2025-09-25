@@ -1,15 +1,26 @@
 use super::action::*;
-use crate::game::{error::{ActionError, GameError}, score::{RoundScore, VariantPlayerScore}, state::{GameState, VariantState}};
+use crate::game::{
+    error::{ActionError, GameError},
+    score::{RoundScore, VariantPlayerScore},
+    state::{GameState, VariantState},
+};
 
 /// Represents the "rule engine" of a Rummy game, handling action execution and score calculation.
-pub trait GameRules where Self: Sized + PartialEq {
+pub trait GameRules
+where
+    Self: Sized + PartialEq,
+{
     /// The state that this variant requires.
     type VariantState: VariantState<Self::VariantScore, Self>;
     /// The score type of this variant (for each player).
     type VariantScore: VariantPlayerScore;
 
     /// Executes an action, returning an `()` or `ActionError`.
-    fn execute_action(&self, state: &mut GameState<Self::VariantScore, Self>, action: GameAction) -> Result<(), ActionError> {
+    fn execute_action(
+        &self,
+        state: &mut GameState<Self::VariantScore, Self>,
+        action: GameAction,
+    ) -> Result<(), ActionError> {
         state.validate_action(&action)?;
         match action {
             GameAction::DrawDeck(action) => self.handle_draw_deck(state, action),
@@ -22,24 +33,50 @@ pub trait GameRules where Self: Sized + PartialEq {
     }
 
     /// Handle drawing from the deck.
-    fn handle_draw_deck(&self, state: &mut GameState<Self::VariantScore, Self>, action: DrawDeckAction) -> Result<(), ActionError>;
+    fn handle_draw_deck(
+        &self,
+        state: &mut GameState<Self::VariantScore, Self>,
+        action: DrawDeckAction,
+    ) -> Result<(), ActionError>;
 
     /// Handle drawing from the discard pile.
-    fn handle_draw_discard_pile(&self, state: &mut GameState<Self::VariantScore, Self>, action: DrawDiscardPileAction) -> Result<(), ActionError>;
+    fn handle_draw_discard_pile(
+        &self,
+        state: &mut GameState<Self::VariantScore, Self>,
+        action: DrawDiscardPileAction,
+    ) -> Result<(), ActionError>;
 
     /// Handle laying off a card from the player's hand.
-    fn handle_lay_off(&self, state: &mut GameState<Self::VariantScore, Self>, action: LayOffAction) -> Result<(), ActionError>;
+    fn handle_lay_off(
+        &self,
+        state: &mut GameState<Self::VariantScore, Self>,
+        action: LayOffAction,
+    ) -> Result<(), ActionError>;
 
     /// Handle forming a single meld.
-    fn handle_form_meld(&self, state: &mut GameState<Self::VariantScore, Self>, action: FormMeldAction) -> Result<(), ActionError>;
+    fn handle_form_meld(
+        &self,
+        state: &mut GameState<Self::VariantScore, Self>,
+        action: FormMeldAction,
+    ) -> Result<(), ActionError>;
 
     /// Handle forming multiple melds at one time. Either all melds successfully form, or none do.
-    fn handle_form_melds(&self, state: &mut GameState<Self::VariantScore, Self>, action: FormMeldsAction) -> Result<(), ActionError>;
+    fn handle_form_melds(
+        &self,
+        state: &mut GameState<Self::VariantScore, Self>,
+        action: FormMeldsAction,
+    ) -> Result<(), ActionError>;
 
     /// Handle discarding a card.
-    fn handle_discard(&self, state: &mut GameState<Self::VariantScore, Self>, action: DiscardAction) -> Result<(), ActionError>;
+    fn handle_discard(
+        &self,
+        state: &mut GameState<Self::VariantScore, Self>,
+        action: DiscardAction,
+    ) -> Result<(), ActionError>;
 
     /// Calculate the score for a round. Returns an `Err` if the round hasn't ended.
-    fn calculate_round_score(&self, state: &GameState<Self::VariantScore, Self>) -> Result<RoundScore<Self::VariantScore>, GameError>;
+    fn calculate_round_score(
+        &self,
+        state: &GameState<Self::VariantScore, Self>,
+    ) -> Result<RoundScore<Self::VariantScore>, GameError>;
 }
-

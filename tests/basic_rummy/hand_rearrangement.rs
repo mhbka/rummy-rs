@@ -1,14 +1,8 @@
 #[test]
-fn valid_hand_rearrangement() {
-
-}
+fn valid_hand_rearrangement() {}
 
 #[test]
-fn invalid_hand_rearrangement() {
-
-}
+fn invalid_hand_rearrangement() {}
 
 #[test]
-fn nonexistent_player() {
-    
-}
+fn nonexistent_player() {}

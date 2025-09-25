@@ -1,5 +1,8 @@
-use rummy::game::{action::{DrawDeckAction, FormMeldAction, GameAction}, game::Game};
 use crate::common::fixtures::create_basic_game;
+use rummy::game::{
+    action::{DrawDeckAction, FormMeldAction, GameAction},
+    game::Game,
+};
 
 #[test]
 fn basic_flow() {
@@ -13,12 +16,16 @@ fn basic_flow() {
     // TODO: record some known-valid games and run them in a test harness
     let mut game = create_basic_game(2).unwrap();
     game.next_round().unwrap();
-    game.execute_action(GameAction::DrawDeck(DrawDeckAction {})).unwrap();
+    game.execute_action(GameAction::DrawDeck(DrawDeckAction {}))
+        .unwrap();
 
     let cur_player = game.get_state().get_current_player().unwrap();
     let mut hand: Vec<_> = cur_player.cards().iter().map(|c| c.data()).collect();
     hand.sort();
     game.rearrange_player_hand(cur_player.id(), hand).unwrap();
-    let indices = vec![1,2,3,4];
-    game.execute_action(GameAction::FormMeld(FormMeldAction { card_indices: indices })).unwrap();   
+    let indices = vec![1, 2, 3, 4];
+    game.execute_action(GameAction::FormMeld(FormMeldAction {
+        card_indices: indices,
+    }))
+    .unwrap();
 }

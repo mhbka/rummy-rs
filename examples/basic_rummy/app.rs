@@ -1,13 +1,16 @@
 use crossterm::event::KeyCode;
 use rummy::{
-    cards::{deck::DeckConfig, meld::Meldable}, 
+    cards::{deck::DeckConfig, meld::Meldable},
     game::{
-        action::{DiscardAction, DrawDeckAction, DrawDiscardPileAction, FormMeldAction, GameAction, LayOffAction}, 
-        error::GameError, 
-        game::Game, 
-        state::GamePhase, 
-        variants::basic::{config::BasicConfig, game::BasicRummyGame}
-    }
+        action::{
+            DiscardAction, DrawDeckAction, DrawDiscardPileAction, FormMeldAction, GameAction,
+            LayOffAction,
+        },
+        error::GameError,
+        game::Game,
+        state::GamePhase,
+        variants::basic::{config::BasicConfig, game::BasicRummyGame},
+    },
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -70,11 +73,11 @@ impl App {
 
     fn setup_game(&mut self) -> Result<(), GameError> {
         let player_ids = vec![0, 1];
-        let deck_config = DeckConfig { 
-            shuffle_seed: None, 
-            pack_count: 1, 
-            high_rank: None, 
-            wildcard_rank: None 
+        let deck_config = DeckConfig {
+            shuffle_seed: None,
+            pack_count: 1,
+            high_rank: None,
+            wildcard_rank: None,
         };
         let game_config = BasicConfig {
             deal_amount: None,
@@ -103,19 +106,17 @@ impl App {
                     }
                 }
             }
-            _ => {
-                match self.state {
-                    AppState::MainMenu => self.handle_main_menu_input(key),
-                    AppState::DrawPhase => self.handle_draw_input(key),
-                    AppState::PlayPhase => self.handle_play_input(key),
-                    AppState::LayOffInput => self.handle_layoff_input(key),
-                    AppState::FormMeldInput => self.handle_meld_input(key),
-                    AppState::DiscardInput => self.handle_discard_input(key),
-                    AppState::RoundEnd => self.handle_round_end_input(key),
-                    AppState::GameEnd => self.handle_game_end_input(key),
-                    _ => {}
-                }
-            }
+            _ => match self.state {
+                AppState::MainMenu => self.handle_main_menu_input(key),
+                AppState::DrawPhase => self.handle_draw_input(key),
+                AppState::PlayPhase => self.handle_play_input(key),
+                AppState::LayOffInput => self.handle_layoff_input(key),
+                AppState::FormMeldInput => self.handle_meld_input(key),
+                AppState::DiscardInput => self.handle_discard_input(key),
+                AppState::RoundEnd => self.handle_round_end_input(key),
+                AppState::GameEnd => self.handle_game_end_input(key),
+                _ => {}
+            },
         }
     }
 
@@ -146,7 +147,8 @@ impl App {
             KeyCode::Char('2') => {
                 if let Some(ref mut game) = self.game {
                     if game.get_state().deck().discard_pile().len() > 0 {
-                        let action = GameAction::DrawDiscardPile(DrawDiscardPileAction { count: Some(1) });
+                        let action =
+                            GameAction::DrawDiscardPile(DrawDiscardPileAction { count: Some(1) });
                         if let Err(e) = game.execute_action(action) {
                             self.error_message = Some(format!("Draw failed: {:?}", e));
                         }
@@ -196,13 +198,15 @@ impl App {
                     match self.input_mode {
                         InputMode::LayOffCardIndex => {
                             if let Some(ref game) = self.game {
-                                let hand_size = game.get_state().get_current_player().unwrap().cards().len();
+                                let hand_size =
+                                    game.get_state().get_current_player().unwrap().cards().len();
                                 if value < hand_size {
                                     self.layoff_data.card_index = Some(value);
                                     self.input_mode = InputMode::LayOffTargetPlayer;
                                     self.input_buffer.clear();
                                 } else {
-                                    self.error_message = Some("Card index out of bounds".to_string());
+                                    self.error_message =
+                                        Some("Card index out of bounds".to_string());
                                 }
                             }
                         }
@@ -214,19 +218,22 @@ impl App {
                                     self.input_mode = InputMode::LayOffTargetMeld;
                                     self.input_buffer.clear();
                                 } else {
-                                    self.error_message = Some("Player index out of bounds".to_string());
+                                    self.error_message =
+                                        Some("Player index out of bounds".to_string());
                                 }
                             }
                         }
                         InputMode::LayOffTargetMeld => {
                             if let Some(ref game) = self.game {
                                 let target_player = self.layoff_data.target_player_index.unwrap();
-                                let meld_count = game.get_state().players()[target_player].melds().len();
+                                let meld_count =
+                                    game.get_state().players()[target_player].melds().len();
                                 if value < meld_count {
                                     self.layoff_data.target_meld_index = Some(value);
                                     self.execute_layoff();
                                 } else {
-                                    self.error_message = Some("Meld index out of bounds".to_string());
+                                    self.error_message =
+                                        Some("Meld index out of bounds".to_string());
                                 }
                             }
                         }
@@ -251,12 +258,14 @@ impl App {
             KeyCode::Enter => {
                 if let Ok(card_index) = self.input_buffer.parse::<usize>() {
                     if let Some(ref game) = self.game {
-                        let hand_size = game.get_state().get_current_player().unwrap().cards().len();
+                        let hand_size =
+                            game.get_state().get_current_player().unwrap().cards().len();
                         if card_index < hand_size && !self.selected_cards.contains(&card_index) {
                             self.selected_cards.push(card_index);
                             self.input_buffer.clear();
                         } else {
-                            self.error_message = Some("Invalid or duplicate card index".to_string());
+                            self.error_message =
+                                Some("Invalid or duplicate card index".to_string());
                         }
                     }
                 }
@@ -290,7 +299,8 @@ impl App {
             KeyCode::Enter => {
                 if let Some(ref mut game) = self.game {
                     if let Err(e) = game.next_round() {
-                        self.state = AppState::Error(format!("Failed to start next round: {:?}", e));
+                        self.state =
+                            AppState::Error(format!("Failed to start next round: {:?}", e));
                     } else {
                         self.update_game_state();
                     }
@@ -312,17 +322,11 @@ impl App {
 
     fn execute_sort_hand(&mut self) {
         if let Some(ref mut game) = self.game {
-            let current_player = game.get_state()
-                .get_current_player()
-                .unwrap();
-            let mut current_player_hand: Vec<_> = current_player
-                .cards()
-                .iter()
-                .map(|c| c.data())
-                .collect();
+            let current_player = game.get_state().get_current_player().unwrap();
+            let mut current_player_hand: Vec<_> =
+                current_player.cards().iter().map(|c| c.data()).collect();
             current_player_hand.sort();
-            game
-                .rearrange_player_hand(current_player.id(), current_player_hand)
+            game.rearrange_player_hand(current_player.id(), current_player_hand)
                 .expect(&format!("{:?}", game.get_state().phase()));
             self.error_message = Some("Sorted hand!".into());
             self.update_game_state();
@@ -336,7 +340,7 @@ impl App {
                 target_player_index: self.layoff_data.target_player_index.unwrap(),
                 target_meld_index: self.layoff_data.target_meld_index.unwrap(),
             };
-            
+
             match game.execute_action(GameAction::LayOff(action)) {
                 Ok(_) => {
                     self.error_message = Some("Layoff successful!".to_string());
@@ -354,7 +358,7 @@ impl App {
             let action = FormMeldAction {
                 card_indices: self.selected_cards.clone(),
             };
-            
+
             match game.execute_action(GameAction::FormMeld(action)) {
                 Ok(_) => {
                     self.error_message = Some("Meld formed successfully!".to_string());
@@ -380,7 +384,7 @@ impl App {
                 card_index,
                 declare_going_out: None,
             };
-            
+
             match game.execute_action(GameAction::Discard(action)) {
                 Ok(_) => {
                     self.error_message = Some("Discard successful!".to_string());

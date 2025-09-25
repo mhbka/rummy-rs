@@ -7,7 +7,7 @@ pub struct BasicConfig {
     /// Overrides the default number of cards a player draws from the deck.
     pub draw_deck_amount: Option<usize>,
     /// Overrides the default number of cards a player draws from the discard pile.
-    pub draw_discard_pile_amount: Option<DrawDiscardPileOverride>
+    pub draw_discard_pile_amount: Option<DrawDiscardPileOverride>,
 }
 
 /// The type of discard pile draw behaviour.
@@ -19,5 +19,5 @@ pub enum DrawDiscardPileOverride {
     /// The player must draw the whole discard pile.
     WholePile,
     /// The player always draws this number of cards from the discard pile.
-    Constant(usize)
+    Constant(usize),
 }

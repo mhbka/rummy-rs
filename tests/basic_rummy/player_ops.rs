@@ -1,5 +1,5 @@
-use rummy::game::{error::GameError, game::Game};
 use crate::common::fixtures::create_basic_game;
+use rummy::game::{error::GameError, game::Game};
 
 #[test]
 fn add_player_during_new_round() {
@@ -36,7 +36,10 @@ fn add_existing_player_id_fails() {
 fn add_too_many_players_fails() {
     let mut game = create_basic_game(6).unwrap();
     game.add_player(6).unwrap();
-    assert!(matches!(game.next_round(), Err(GameError::FailedRoundSetup(_))));
+    assert!(matches!(
+        game.next_round(),
+        Err(GameError::FailedRoundSetup(_))
+    ));
 }
 
 #[test]
@@ -53,5 +56,8 @@ fn quit_player_during_round() {
 #[test]
 fn quit_nonexistent_player_fails() {
     let mut game = create_basic_game(2).unwrap();
-    assert!(matches!(game.quit_player(3), Err(GameError::PlayerDoesntExist)));
+    assert!(matches!(
+        game.quit_player(3),
+        Err(GameError::PlayerDoesntExist)
+    ));
 }

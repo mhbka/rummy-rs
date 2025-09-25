@@ -31,7 +31,7 @@ impl Player {
     pub fn id(&self) -> usize {
         self.id
     }
-    
+
     /// Get the player's cards.
     pub fn cards(&self) -> &Vec<Card> {
         &self.cards

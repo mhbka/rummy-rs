@@ -1,4 +1,7 @@
-use crate::game::{state::VariantState, variants::basic::{rules::BasicRules, score::BasicScore}};
+use crate::game::{
+    state::VariantState,
+    variants::basic::{rules::BasicRules, score::BasicScore},
+};
 
 /// Basic Rummy requires no additional state, so this is an empty struct.
 #[derive(Debug, Clone, PartialEq, Eq)]

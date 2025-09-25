@@ -11,7 +11,7 @@ pub enum ActionError {
     /// Serious; indicates something went wrong internally, such as an unexpected invalid state.
     /// May need to stop the game.
     #[error("{0}")]
-    Internal(#[from] InternalError)
+    Internal(#[from] InternalError),
 }
 
 /// Reasons that a `GameAction` couldn't be executed.
@@ -32,20 +32,22 @@ pub enum FailedActionError {
 }
 
 /// Internal errors encountered during the game.
-/// 
+///
 /// This possibly indicate invalid internal state; as a result, the game may need to be terminated.
 #[derive(Debug, Clone, Error)]
 pub enum InternalError {
-    #[error("There are no/not enough cards left in deck and discard pile to draw the required amount")]
+    #[error(
+        "There are no/not enough cards left in deck and discard pile to draw the required amount"
+    )]
     NoCardsInDeckOrDiscardPile,
     #[error("The current player index is invalid")]
     InvalidCurrentPlayer { current: usize },
     #[error("The round has no winner despite having already ended")]
-    RoundHasNoWinner
+    RoundHasNoWinner,
 }
 
 /// Errors pertaining to the game itself.
-/// 
+///
 /// This doesn't indicate any issues with internal state, but rather that some function was called at the "wrong" time.
 #[derive(Debug, Clone, Error)]
 pub enum GameError {
@@ -56,11 +58,11 @@ pub enum GameError {
     #[error("Tried to add a player ID when it already exists")]
     AddedPlayerAlreadyExists,
     #[error("Failed to rearrange the hand")]
-    FailedHandRearrangement, 
+    FailedHandRearrangement,
     #[error("The round setup failed: {0}")]
     FailedRoundSetup(#[from] GameSetupError),
     #[error("An internal error occurred {0}")]
-    Internal(#[from] InternalError)
+    Internal(#[from] InternalError),
 }
 
 /// Errors while creating a game.
@@ -71,5 +73,5 @@ pub enum GameSetupError {
     #[error("The game has too few players")]
     TooFewPlayers,
     #[error("The deck doesn't have enough cards for the number of players (enough meaning all players can be dealt + draw from deck once)")]
-    NotEnoughCards
+    NotEnoughCards,
 }
