@@ -295,8 +295,7 @@ impl App {
         if key == KeyCode::Enter {
             if let Some(ref mut game) = self.game {
                 if let Err(e) = game.next_round() {
-                    self.state =
-                        AppState::Error(format!("Failed to start next round: {e:?}"));
+                    self.state = AppState::Error(format!("Failed to start next round: {e:?}"));
                 } else {
                     self.update_game_state();
                 }

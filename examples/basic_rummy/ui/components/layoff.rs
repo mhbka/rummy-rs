@@ -45,10 +45,7 @@ pub fn render_layoff_input(f: &mut Frame, area: Rect, app: &App) {
         Line::from(format!("> {}", app.input_buffer)),
     ];
 
-    let content: Vec<_> = layoff_progress
-        .into_iter()
-        .chain(input)
-        .collect();
+    let content: Vec<_> = layoff_progress.into_iter().chain(input).collect();
 
     let paragraph = Paragraph::new(content)
         .block(Block::default().borders(Borders::ALL).title("Lay Off"))
