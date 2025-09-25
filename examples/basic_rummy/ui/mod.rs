@@ -3,7 +3,6 @@ mod components;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
-    text::Span,
     widgets::{Block, Borders, Paragraph},
     Frame,
 };

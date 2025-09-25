@@ -1,12 +1,11 @@
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph, Wrap},
+    widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use rummy::{cards::meld::Meldable, game::game::Game};
-use crate::app::{App, InputMode};
+use rummy::cards::meld::Meldable;
 
 pub fn render_error(f: &mut Frame, area: Rect, error_msg: &str) {
     let content = vec![

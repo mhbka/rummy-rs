@@ -2,8 +2,8 @@
 mod tests {    
     use crate::cards::{
         card::Card,
-        deck::{Deck, DeckConfig},
-        meld::{Meld, Meldable, Run, Set},
+        deck::DeckConfig,
+        meld::{Meldable, Run},
         suit_rank::{Rank, Suit},
     };
     use std::collections::HashSet;

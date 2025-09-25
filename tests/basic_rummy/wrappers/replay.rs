@@ -1,6 +1,6 @@
 use rummy::{game::{action::{DiscardAction, DrawDeckAction, FormMeldAction, GameAction}, game::Game}, wrappers::replay::Replay};
 
-use crate::common::fixtures::{create_basic_game_with_history, create_basic_game_with_replay};
+use crate::common::fixtures::create_basic_game_with_history;
 
 #[test]
 fn replay_is_correct() {

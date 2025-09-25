@@ -1,12 +1,12 @@
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph, Wrap},
+    widgets::{Block, Borders, Paragraph},
     Frame,
 };
 use rummy::{cards::meld::Meldable, game::game::Game};
-use crate::app::{App, InputMode};
+use crate::app::App;
 
 pub fn render_round_end(f: &mut Frame, area: Rect, app: &App) {
     if let Some(ref game) = app.game {

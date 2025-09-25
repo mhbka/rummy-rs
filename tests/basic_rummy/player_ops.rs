@@ -1,4 +1,4 @@
-use rummy::game::{error::{GameError, GameSetupError}, game::Game};
+use rummy::game::{error::GameError, game::Game};
 use crate::common::fixtures::create_basic_game;
 
 #[test]

@@ -1,5 +1,5 @@
 use super::action::*;
-use crate::{cards::card::Card, game::{error::{ActionError, GameError}, game::Game, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState, VariantState}}};
+use crate::game::{error::{ActionError, GameError}, score::{RoundScore, VariantPlayerScore}, state::{GameState, VariantState}};
 
 /// Represents the "rule engine" of a Rummy game, handling action execution and score calculation.
 pub trait GameRules where Self: Sized + PartialEq {

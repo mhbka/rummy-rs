@@ -1,4 +1,4 @@
-use rummy::{game::{action::{DiscardAction, DrawDeckAction, FormMeldAction, GameAction, GameInteractions}, game::Game}, wrappers::history::HistoryEntry};
+use rummy::game::{action::{DiscardAction, DrawDeckAction, FormMeldAction, GameAction, GameInteractions}, game::Game};
 use crate::common::fixtures::create_basic_game_with_history;
 
 #[test]

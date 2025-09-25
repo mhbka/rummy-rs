@@ -1,12 +1,12 @@
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
+    layout::Rect,
+    style::{Modifier, Style},
     text::{Line, Span},
     widgets::{Block, Borders, Paragraph, Wrap},
     Frame,
 };
-use rummy::{cards::meld::Meldable, game::game::Game};
-use crate::app::{App, InputMode};
+use rummy::cards::meld::Meldable;
+use crate::app::App;
 
 pub fn render_meld_input(f: &mut Frame, area: Rect, app: &App) {
     let content = vec![

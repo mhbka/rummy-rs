@@ -1,5 +1,5 @@
-use rummy::{cards::deck::DeckConfig, game::{error::GameSetupError, game::Game, variants::basic::config::BasicConfig}};
-use crate::common::fixtures::{create_basic_game, create_basic_game_with_config};
+use rummy::game::{error::GameSetupError, game::Game, variants::basic::config::BasicConfig};
+use crate::common::fixtures::create_basic_game_with_config;
 
 #[test]
 fn override_deal_amount_is_correct() {
