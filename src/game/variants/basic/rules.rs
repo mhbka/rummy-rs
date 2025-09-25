@@ -114,7 +114,7 @@ impl GameRules for BasicRules {
                 .get_mut(action.target_meld_index)
                 .ok_or(FailedActionError::InvalidMeldIndex)?;
             target_meld
-                .layoff_card(&mut current_player.cards, action.position)
+                .layoff_card(&mut current_player.cards, action.card_index)
                 .map_err(|err| FailedActionError::FailedMeld(err))?;
         } else {
             // Different players - use `split_at_mut`, otherwise we get multiple mut references
@@ -134,7 +134,7 @@ impl GameRules for BasicRules {
                 .get_mut(action.target_meld_index)
                 .ok_or(FailedActionError::InvalidMeldIndex)?;
             target_meld
-                .layoff_card(&mut current_player.cards, action.position)
+                .layoff_card(&mut current_player.cards, action.card_index)
                 .map_err(|err| FailedActionError::FailedMeld(err))?;
         }
         

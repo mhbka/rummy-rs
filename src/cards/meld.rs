@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use strum::Display;
 use thiserror::Error;
 use super::{
     card::Card,
@@ -72,9 +73,9 @@ impl Meld {
         all_indices.dedup();
         let dedup_len = all_indices.len();
         if before_len != dedup_len {
-            let err = Box::new(MeldError::DuplicateIndex);
+            let err = Box::new(MeldError::InvalidCardIndex);
             return Err(
-                MeldError::FailedMultipleMelds { indices_index: 0, err }
+                MeldError::FailedMultipleMelds { meld_index: 0, err }
             );
         }
 
@@ -83,7 +84,7 @@ impl Meld {
             if let Err(err) = Meld::valid(hand_cards, indices) {
                 let err = Box::new(err);
                 return Err(
-                    MeldError::FailedMultipleMelds { indices_index: i, err }
+                    MeldError::FailedMultipleMelds { meld_index: i, err }
                 );
             }
         }
@@ -116,7 +117,7 @@ impl Meldable for Meld {
     {   
         let set: HashSet<_> = indices.iter().collect();
         if set.len() != indices.len() {
-            return Err(MeldError::DuplicateIndex);
+            return Err(MeldError::InvalidCardIndex);
         }
 
         match Set::new(hand_cards, indices) {
@@ -184,10 +185,7 @@ impl Meldable for Set {
                     .cloned()
                     // InvalidIndex shouldn't happen here since we already validated in `Self::valid`,
                     // but defensive programming is always good
-                    .ok_or(MeldError::InvalidIndex { 
-                        index: i, 
-                        max_valid: hand_cards.len().saturating_sub(1) 
-                    })
+                    .ok_or(MeldError::InvalidCardIndex)
             })
             .collect::<Result<Vec<_>, _>>()?;
 
@@ -212,10 +210,7 @@ impl Meldable for Set {
             .map(|&i| {
                 hand_cards
                     .get(i)
-                    .ok_or(MeldError::InvalidIndex { 
-                        index: i, 
-                        max_valid: hand_cards.len().saturating_sub(1) 
-                    })
+                    .ok_or(MeldError::InvalidCardIndex)
             })
             .collect::<Result<Vec<_>, _>>()?;
         match cards[0].deck_config.wildcard_rank {
@@ -255,13 +250,12 @@ impl Meldable for Set {
     }
 
     fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), MeldError> {
-        let max_valid = hand_cards.len().saturating_sub(1);
         let card = hand_cards
             .get_mut(index)
-            .ok_or(MeldError::InvalidIndex { index, max_valid })?;
+            .ok_or(MeldError::InvalidCardIndex)?;
 
-        // if our card has the set's rank, swap with any wildcard in the meld first;
-        // if there aren't any, then just push into the meld
+        // if our card has the set's rank, swap with any wildcard in the meld first.
+        // if there aren't any wildcards, then just push into the meld
         if card.rank == self.set_rank {
             if let Some(wildcard) = self.cards.iter_mut().find(|c| c.is_wildcard()) {
                 std::mem::swap(wildcard, card);
@@ -270,15 +264,13 @@ impl Meldable for Set {
             }
             return Ok(());
         }
-        // else, if the layoff card is a wildcard, add it
-        else if let Some(wildcard_rank) = card.deck_config.wildcard_rank {
-            if card.rank == wildcard_rank {
-                self.cards.push(hand_cards.remove(index));
-                return Ok(());
-            }
+        // else, if the layoff card is a wildcard, simply add it
+        else if card.is_wildcard() {
+            self.cards.push(hand_cards.remove(index));
+            return Ok(());
         }
 
-        Err(MeldError::InvalidLayoff { meld_type: "set" })
+        Err(MeldError::InvalidLayoff)
     }
 
     fn cards(&self) -> &Vec<Card> {
@@ -315,10 +307,7 @@ impl Meldable for Run {
                 hand_cards
                     .get(idx)
                     .cloned()
-                    .ok_or(MeldError::InvalidIndex { 
-                        index: idx, 
-                        max_valid: hand_cards.len().saturating_sub(1) 
-                    })
+                    .ok_or(MeldError::InvalidCardIndex)
             })
             .collect::<Result<Vec<_>, _>>()?;
 
@@ -350,10 +339,7 @@ impl Meldable for Run {
             .map(|&idx| {
                 hand_cards
                     .get(idx)
-                    .ok_or(MeldError::InvalidIndex { 
-                        index: idx, 
-                        max_valid: hand_cards.len().saturating_sub(1) 
-                    })
+                    .ok_or(MeldError::InvalidCardIndex)
             })
             .collect::<Result<Vec<_>, _>>()?;
         
@@ -399,14 +385,11 @@ impl Meldable for Run {
     fn layoff_card(&mut self, hand_cards: &mut Vec<Card>, index: usize) -> Result<(), MeldError> {
         let layoff_card = hand_cards
             .get(index)
-            .ok_or(MeldError::InvalidIndex { 
-                index, 
-                max_valid: hand_cards.len().saturating_sub(1) 
-            })?;
+            .ok_or(MeldError::InvalidCardIndex)?;
 
-        if let Some(wildcard_rank) = layoff_card.deck_config.wildcard_rank {
+        if layoff_card.deck_config.wildcard_rank.is_some() {
             // if our card is a wildcard, its always valid to layoff
-            if layoff_card.rank == wildcard_rank {
+            if layoff_card.is_wildcard() {
                 self.cards.push(hand_cards.remove(index));
                 return Ok(());
             }
@@ -433,7 +416,7 @@ impl Meldable for Run {
             self.cards.push(hand_cards.remove(index));
             return Ok(());
         } else {
-            Err(MeldError::InvalidLayoff { meld_type: "run" })
+            Err(MeldError::InvalidLayoff)
         }
     }
 
@@ -443,24 +426,32 @@ impl Meldable for Run {
 }
 
 /// Potential errors from a meld.
-#[derive(Error, Debug, Clone, PartialEq)]
+#[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum MeldError {
     #[error("Not enough cards provided: got {provided}, need at least {minimum}")]
     InsufficientCards { provided: usize, minimum: usize },
-    #[error("Index {index} is out of bounds (max valid: {max_valid})")]
-    InvalidIndex { index: usize, max_valid: usize },
-    #[error("At least 1 index in the indices are duplicated")]
-    DuplicateIndex,
+    #[error("A given card index is out of bounds")]
+    InvalidCardIndex,
+    #[error("There's at least 1 duplicate card index")]
+    DuplicateCardIndex,
     #[error("Cards do not form a valid set")]
     InvalidSet,
     #[error("Cards don't form a valid run")]
     InvalidRun,
     #[error("Cannot create a set from only wildcards")]
     OnlyWildcards,
-    #[error("Card cannot be laid off in this {meld_type}")]
-    InvalidLayoff { meld_type: &'static str },
+    #[error("Card cannot be laid off")]
+    InvalidLayoff,
     #[error("Cards don't form valid run (and not enough wildcards to fill gaps)")]
     InsufficientWildcards,
-    #[error("Failed to form multiple melds. Indices {indices_index} failed with error: {err}")]
-    FailedMultipleMelds { indices_index: usize, err: Box<MeldError> }
+    #[error("Failed to form multiple melds. Meld {meld_index} failed with error: {err}")]
+    FailedMultipleMelds { meld_index: usize, err: Box<MeldError> }
+}
+
+/// The type of index which caused the `MeldError`.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+pub enum MeldErrorIndexType {
+    Card,
+    Meld,
+    Player
 }

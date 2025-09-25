@@ -32,7 +32,6 @@ pub enum InputMode {
     LayOffCardIndex,
     LayOffTargetPlayer,
     LayOffTargetMeld,
-    LayOffPosition,
     MeldCardSelection,
     DiscardCardIndex,
 }
@@ -53,7 +52,6 @@ pub struct LayOffData {
     pub card_index: Option<usize>,
     pub target_player_index: Option<usize>,
     pub target_meld_index: Option<usize>,
-    pub position: Option<usize>,
 }
 
 impl App {
@@ -71,9 +69,9 @@ impl App {
     }
 
     fn setup_game(&mut self) -> Result<(), GameError> {
-        let player_ids = vec![1, 2];
+        let player_ids = vec![0, 1];
         let deck_config = DeckConfig { 
-            shuffle_seed: Some(1), 
+            shuffle_seed: None, 
             pack_count: 1, 
             high_rank: None, 
             wildcard_rank: None 
@@ -226,16 +224,11 @@ impl App {
                                 let meld_count = game.get_state().players[target_player].melds().len();
                                 if value < meld_count {
                                     self.layoff_data.target_meld_index = Some(value);
-                                    self.input_mode = InputMode::LayOffPosition;
-                                    self.input_buffer.clear();
+                                    self.execute_layoff();
                                 } else {
                                     self.error_message = Some("Meld index out of bounds".to_string());
                                 }
                             }
-                        }
-                        InputMode::LayOffPosition => {
-                            self.layoff_data.position = Some(value);
-                            self.execute_layoff();
                         }
                         _ => {}
                     }
@@ -331,6 +324,7 @@ impl App {
             game
                 .rearrange_player_hand(current_player.id(), current_player_hand)
                 .expect(&format!("{:?}", game.get_state().phase));
+            self.error_message = Some("Sorted hand!".into());
             self.update_game_state();
         }
     }
@@ -341,7 +335,6 @@ impl App {
                 card_index: self.layoff_data.card_index.unwrap(),
                 target_player_index: self.layoff_data.target_player_index.unwrap(),
                 target_meld_index: self.layoff_data.target_meld_index.unwrap(),
-                position: self.layoff_data.position.unwrap(),
             };
             
             match game.execute_action(GameAction::LayOff(action)) {

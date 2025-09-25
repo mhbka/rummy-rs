@@ -22,7 +22,6 @@ pub fn ui(f: &mut Frame, app: &App) {
         ])
         .split(f.size());
 
-    // Title
     let title = Paragraph::new("🃏 Rummy Game 🃏")
         .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
         .alignment(Alignment::Center)
@@ -40,10 +39,7 @@ pub fn ui(f: &mut Frame, app: &App) {
         AppState::Error(ref msg) => render_error(f, chunks[1], msg),
     }
 
-    // Status bar
     render_status_bar(f, chunks[2], app);
-
-    // Instructions
     render_instructions(f, chunks[3], app);
 }
 

@@ -24,7 +24,7 @@ mod tests {
         let indices = vec![0, 1, 5]; // Index 5 is out of bounds
         
         let result = Meld::new(&mut cards, &indices);
-        assert!(matches!(result, Err(MeldError::InvalidIndex { index: 1, max_valid: 0 })));
+        assert!(matches!(result, Err(MeldError::InvalidCardIndex)));
     }
 
     #[test]
@@ -51,7 +51,7 @@ mod tests {
         ];
         
         let result = set.layoff_card(&mut layoff_hand, 5); // Invalid index
-        assert!(matches!(result, Err(MeldError::InvalidIndex { index: 5, max_valid: 0 })));
+        assert!(matches!(result, Err(MeldError::InvalidCardIndex)));
     }
 
     #[test]
@@ -92,7 +92,7 @@ mod tests {
         let mut layoff_card = vec![create_card(Rank::Two, Suit::Clubs, cfg.clone())];
 
         let result = meld.layoff_card(&mut layoff_card, 0);
-        assert!(matches!(result, Err(MeldError::InvalidLayoff { meld_type: "set" })));
+        assert!(matches!(result, Err(MeldError::InvalidLayoff)));
     }
 
     #[test]
@@ -111,7 +111,7 @@ mod tests {
             create_card(Rank::Four, Suit::Spades, cfg.clone()), // Wrong suit
         ];
 
-        assert!(matches!(meld.layoff_card(&mut layoff_cards, 0), Err(MeldError::InvalidLayoff { meld_type: "run" })));
-        assert!(matches!(meld.layoff_card(&mut layoff_cards, 1), Err(MeldError::InvalidLayoff { meld_type: "run" })));
+        assert!(matches!(meld.layoff_card(&mut layoff_cards, 0), Err(MeldError::InvalidLayoff)));
+        assert!(matches!(meld.layoff_card(&mut layoff_cards, 1), Err(MeldError::InvalidLayoff)));
     }
 }

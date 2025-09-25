@@ -35,7 +35,7 @@ mod tests {
         let mut empty_hand: Vec<Card> = vec![];
         let result = set.layoff_card(&mut empty_hand, 0);
         
-        assert!(matches!(result, Err(MeldError::InvalidIndex { index: 0, .. })));
+        assert!(matches!(result, Err(MeldError::InvalidCardIndex)));
     }
 
     #[test]
@@ -174,7 +174,7 @@ mod tests {
             create_card(Rank::Ten, Suit::Hearts, cfg.clone()),
         ];
         let result = set.layoff_card(&mut another_hand, 1);
-        assert!(matches!(result, Err(MeldError::InvalidIndex { index: 1, max_valid: 0 })));
+        assert!(matches!(result, Err(MeldError::InvalidCardIndex)));
     }
 
     #[test]

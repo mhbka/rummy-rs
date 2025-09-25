@@ -22,9 +22,8 @@ pub struct CardData {
 /// A card.
 /// 
 /// This contains an `Arc` to the deck's `DeckConfig`, used for calculating ordering when taking
-/// into account custom high ranks, amongst other things.
-/// 
-/// This means this isn't (de)serializable. For that, use `CardData`.
+/// into account custom high ranks (amongst other things),
+/// meaning it isn't (de)serializable. For that, use `CardData`.
 #[derive(Clone)]
 pub struct Card {
     pub(crate) rank: Rank,
@@ -102,7 +101,7 @@ impl Card {
         self.value() + 4 == other.value()
     }
 
-    /// Returns whether the card is a `wildcard`, as determined by `deck_config`.
+    /// Returns whether the card is a wildcard, as determined by `deck_config`.
     pub(crate) fn is_wildcard(&self) -> bool {
         Some(self.rank) == self.deck_config.wildcard_rank
     }

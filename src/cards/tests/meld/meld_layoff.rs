@@ -129,7 +129,7 @@ mod tests {
         ];
         
         let result = set.layoff_card(&mut layoff_hand, 0);
-        assert!(matches!(result, Err(MeldError::InvalidLayoff { meld_type: "set" })));
+        assert!(matches!(result, Err(MeldError::InvalidLayoff)));
         assert_eq!(layoff_hand.len(), 1); // Card should remain in hand
     }
 
@@ -149,7 +149,7 @@ mod tests {
         ];
         
         let result = run.layoff_card(&mut layoff_hand, 0);
-        assert!(matches!(result, Err(MeldError::InvalidLayoff { meld_type: "run" })));
+        assert!(matches!(result, Err(MeldError::InvalidLayoff)));
     }
 
     #[test]
@@ -168,6 +168,6 @@ mod tests {
         ];
         
         let result = run.layoff_card(&mut layoff_hand, 0);
-        assert!(matches!(result, Err(MeldError::InvalidLayoff { meld_type: "run" })));
+        assert!(matches!(result, Err(MeldError::InvalidLayoff)));
     }
 }

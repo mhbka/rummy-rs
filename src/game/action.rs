@@ -55,8 +55,6 @@ pub struct LayOffAction {
     pub target_player_index: usize,
     /// The index of the meld on the table to add the card to.
     pub target_meld_index: usize,
-    /// The index within the meld to insert the card (or, if that index contains a wildcard, replace it).
-    pub position: usize,
 }
 
 /// Represents forming a single meld.
