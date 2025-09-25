@@ -17,7 +17,7 @@ pub struct HistoryEntry {
 /// This means one can construct the state of the game at each step.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct History<G: Game> {
+pub struct History<G: Game + Clone> {
     /// The current game.
     current_game: G,
     /// The map of round numbers to initial round states.
@@ -78,7 +78,7 @@ impl History<BasicRummyGame> {
     }
 }
 
-impl<G: Game> Game for History<G> {
+impl<G: Game + Clone> Game for History<G> {
     type Rules = G::Rules;
 
     fn execute_action(&mut self, action: GameAction) -> Result<(), ActionError> {

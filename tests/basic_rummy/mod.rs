@@ -6,3 +6,4 @@ pub mod drawing;
 pub mod hand_rearrangement;
 pub mod form_meld;
 pub mod wrappers;
+pub mod serialization;

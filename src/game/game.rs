@@ -2,7 +2,7 @@ use super::action::*;
 use crate::{cards::card::{Card, CardData}, game::{error::{ActionError, GameError}, rules::GameRules, score::{RoundScore, VariantPlayerScore}, state::{GamePhase, GameState, VariantState}}};
 
 /// Represents a Rummy game.
-pub trait Game where Self: GameTraits {
+pub trait Game {
     /// The `GameRules` that this game follows.
     type Rules: GameRules;
 

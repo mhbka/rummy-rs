@@ -3,7 +3,7 @@ use crate::{cards::card::CardData, game::{action::{GameAction, GameInteractions}
 /// The state of the replay.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct ReplayState<G: Game> {
+pub struct ReplayState<G: Game + Clone> {
     /// The original game.
     game: History<G>,
     /// The game in its "replaying" state.
@@ -16,7 +16,7 @@ pub struct ReplayState<G: Game> {
     skip_failed_actions: bool
 }
 
-impl<G: Game> ReplayState<G> {
+impl<G: Game + Clone> ReplayState<G> {
     /// Initialize the state.
     fn new(game: History<G>, skip_failed_actions: bool) -> Self {
         let replaying_game = game
@@ -135,12 +135,12 @@ impl<G: Game> ReplayState<G> {
 /// from that round's initial state up to the requested point in history, which is more expensive.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Replay<G: Game> {
+pub struct Replay<G: Game + Clone> {
     /// The state of the replay.
     replay_state: ReplayState<G>
 }
 
-impl<G: Game> Replay<G> {
+impl<G: Game + Clone> Replay<G> {
     /// Create a replay from a game with history.
     /// 
     /// If you want to skip unsuccessful/failed actions during replay, set `skip_failed_actions` to true.
@@ -180,7 +180,7 @@ impl<G: Game> Replay<G> {
     }
 }
 
-impl<G: Game> Game for Replay<G> {
+impl<G: Game + Clone> Game for Replay<G> {
     type Rules = G::Rules;
 
     fn execute_action(&mut self, action: GameAction) -> Result<(), ActionError> {

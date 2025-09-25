@@ -1,0 +1,13 @@
+#[test]
+#[cfg(feature = "serde")]
+fn serialization_works() {
+    use rummy::game::game::Game;
+    use crate::common::fixtures::create_basic_game;
+
+    let mut game = create_basic_game(2).unwrap();
+    game.next_round().unwrap();
+
+    let serialized = serde_json::to_string(&game).unwrap();
+    let deserialized_game = serde_json::from_str(&serialized).unwrap();
+    assert_eq!(game, deserialized_game);
+}
