@@ -1,3 +1,5 @@
+//! Contains the [`GameRules`](crate::game::rules::GameRules) implementation for basic Rummy.
+
 use crate::{
     cards::meld::{Meld, Meldable},
     game::{
@@ -204,7 +206,7 @@ impl GameRules for BasicRules {
     fn handle_form_melds(
         &self,
         state: &mut GameState<BasicScore, BasicRules>,
-        mut action: FormMeldsAction,
+        action: FormMeldsAction,
     ) -> Result<(), ActionError> {
         let player = state.get_current_player_mut()?;
         let mut melds = Meld::multiple(&mut player.cards, &action.melds)

@@ -1,3 +1,8 @@
+//! Contains errors related to the game, of which there are 3 main types:
+//! - `ActionError`, denoting the failed execution of an action
+//! - `GameError`, denoting other errors pertaining to the game's execution
+//! - `GameSetupError`, denoting failure to set up a game
+
 use thiserror::Error;
 
 use crate::{cards::meld::MeldError, game::state::GamePhase};

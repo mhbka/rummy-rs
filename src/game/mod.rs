@@ -1,3 +1,5 @@
+//! Contains most of the actual game-related code.
+
 pub mod action;
 pub mod error;
 pub mod rules;

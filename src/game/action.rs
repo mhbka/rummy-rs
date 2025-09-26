@@ -1,3 +1,9 @@
+//! Contains the enum representing all possible actions for a game, `GameAction`.
+//!
+//! Also contains `GameInteractions`, which represents all possible interactions with the game.
+//! This is mostly here for ease of external usage + serialization, and is not required;
+//! users can also just directly interact with the game.
+
 use crate::cards::card::CardData;
 
 /// The possible interactions with a `Game`.

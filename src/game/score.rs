@@ -1,3 +1,6 @@
+//! Contains the `RoundScore`, which just contains a mapping of player IDs to their scores,
+//! as well as the winning player's ID.
+
 use std::collections::HashMap;
 
 /// Score information for a completed round.

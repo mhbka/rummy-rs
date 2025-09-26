@@ -1,3 +1,5 @@
+//! Contains the configuration for a [`BasicRummyGame`](super::game::BasicRummyGame).
+
 /// Holds override configuration values for basic Rummy.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

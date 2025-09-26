@@ -1,3 +1,8 @@
+//! Contains the `Player`, which is just a player in a Rummy game.
+//!
+//! Each player can be identified with a `usize` ID, obtainable by calling `id()`.
+//! This ID is independent of the player's index within the game's players.
+
 use super::cards::{card::Card, meld::Meld};
 
 /// A Rummy player.

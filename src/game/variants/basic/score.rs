@@ -1,3 +1,5 @@
+//! Contains the representation for a player's score in basic Rummy.
+
 use crate::{game::score::VariantPlayerScore, player::Player};
 
 /// A single player's score in basic Rummy.

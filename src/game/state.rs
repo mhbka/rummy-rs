@@ -1,3 +1,5 @@
+//! Contains the `GameState`, which is essentially the entire state of the game.
+
 use crate::{
     cards::deck::{Deck, DeckConfig},
     game::{

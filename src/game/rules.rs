@@ -1,3 +1,7 @@
+//! Contains the `GameRules` trait, which encapsulates mostly action-evaluating behaviour of a game.
+//!
+//! This is used by the variant's `Game` struct.
+
 use super::action::*;
 use crate::game::{
     error::{ActionError, GameError},

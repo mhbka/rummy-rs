@@ -1,3 +1,5 @@
+//! Contains the additional state for basic Rummy (of which there is none, but we must still implement it).
+
 use crate::game::{
     state::VariantState,
     variants::basic::{rules::BasicRules, score::BasicScore},

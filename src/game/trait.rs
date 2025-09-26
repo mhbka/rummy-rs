@@ -1,3 +1,9 @@
+//! Contains the main `Game` trait, which encapsulates the overall behaviour expected of a Rummy game.
+//!
+//! A `Game` has an associated type `Rules: GameRules`, which mostly handles evaluating of game actions.
+//!
+//! This ensures a separation between game administration and action evaluations.
+
 use super::action::*;
 use crate::{
     cards::card::CardData,

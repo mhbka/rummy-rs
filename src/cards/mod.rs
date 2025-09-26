@@ -1,5 +1,4 @@
-//! This module contains functionality involving cards,
-//! mainly the `Suit`/`Rank`, `Card`, `Meld` and `Deck`.
+//! Contains functionality involving cards, mainly the `Suit`/`Rank`, `Card`, `Meld` and `Deck`.
 
 pub mod card;
 pub mod deck;

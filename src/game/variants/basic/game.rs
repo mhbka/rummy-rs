@@ -1,3 +1,5 @@
+//! Contains the [`BasicRummyGame`], an implementation of basic Rummy.
+
 use crate::{
     cards::{
         card::{Card, CardData},
