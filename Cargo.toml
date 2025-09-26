@@ -1,6 +1,6 @@
 [package]
 name = "rummy"
-version = "0.2.0"
+version = "0.1.4"
 edition = "2021"
 repository = "https://github.com/mhbka/rummy-rs"
 description = "a crate for the card game Rummy"

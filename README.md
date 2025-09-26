@@ -8,12 +8,6 @@ It supports:
 
 ## Basic usage
 ```rust
-use rummy::{
-    cards::deck::DeckConfig, 
-    game::{error::GameSetupError, r#trait::Game,  variants::basic::{config::BasicConfig, game::BasicRummyGame}}, 
-    wrappers::{history::History, replay::Replay}
-};
-
 fn main() {
     // Create a basic Rummy game with 4 players and default configuration 
     let player_ids: Vec<usize> = vec![1, 2, 3, 4];
