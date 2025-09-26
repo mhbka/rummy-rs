@@ -10,7 +10,7 @@ It supports:
 ```rust
 use rummy::{
     cards::deck::DeckConfig, 
-    game::{error::GameSetupError, variants::basic::{config::BasicConfig, game::BasicRummyGame}}, 
+    game::{error::GameSetupError, r#trait::Game,  variants::basic::{config::BasicConfig, game::BasicRummyGame}}, 
     wrappers::{history::History, replay::Replay}
 };
 
