@@ -1,3 +1,6 @@
+//! Contains the basic `Suit` and `Rank`,
+//! which essentially define a `Card`.
+
 use strum::EnumIter;
 
 /// Poker suits.

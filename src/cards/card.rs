@@ -1,3 +1,11 @@
+//! Contains the `Card`, the basic unit in playing Rummy.
+//!
+//! Since the `Card` is not (de)serializable due to implementation details,
+//! `CardData` can be used towards that purpose.
+//!
+//! Any external API in this crate that involves an owned `Card` will instead use
+//! `CardData`, and manage the conversion internally.
+
 use super::{
     deck::DeckConfig,
     suit_rank::{Rank, Suit},

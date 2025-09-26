@@ -1,3 +1,7 @@
+//! Contains the `Meld`, of which there are (at the moment) two kinds:
+//! - `Set`, cards with the same rank
+//! - `Run`, consecutive cards of the same suit
+
 use std::collections::HashSet;
 
 use super::{

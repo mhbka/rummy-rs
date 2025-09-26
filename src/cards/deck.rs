@@ -1,3 +1,8 @@
+//! Contains the `Deck`, consisting of a stock and discard pile.
+//!
+//! It can be initialized with a `DeckConfig`, which is passed within an `Arc` to its cards
+//! and controls things like custom high ranks/wildcards.
+
 use crate::cards::card::CardData;
 use std::sync::Arc;
 
@@ -49,7 +54,9 @@ impl DeckConfig {
     }
 }
 
-/// The deck, consisting of the:
+/// The deck.
+///
+/// Consists of the:
 /// - **config**, dictating shuffling, pack counts, wildcards etc.
 /// - **stock**, face-down cards that can be drawn at the start of each turn
 /// - **discard pile**, discarded cards, which can also be drawn
