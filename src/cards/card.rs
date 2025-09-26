@@ -1,8 +1,15 @@
+//! Contains the `Card`, the basic unit in playing Rummy.
+//!
+//! Since the `Card` is not (de)serializable due to implementation details,
+//! `CardData` can be used towards that purpose.
+//!
+//! Any external API in this crate that involves an owned `Card` will instead use
+//! `CardData`, and manage the conversion internally.
+
 use super::{
     deck::DeckConfig,
     suit_rank::{Rank, Suit},
 };
-use serde::{Deserialize, Serialize};
 use std::{
     cmp::Ordering,
     fmt::{Debug, Display},
@@ -10,26 +17,40 @@ use std::{
     sync::Arc,
 };
 
+/// The data of a card.
+///
+/// Since a `Card` is not serializable, this type can instead be used for external interactions.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct CardData {
+    pub rank: Rank,
+    pub suit: Suit,
+}
+
 /// A card.
 ///
-/// Always tied to a `Deck`.
-#[derive(Clone, Serialize, Deserialize)]
+/// This contains an `Arc` to the deck's `DeckConfig`, used for calculating ordering when taking
+/// into account custom high ranks (amongst other things),
+/// meaning it isn't (de)serializable. For that, use `CardData`.
+#[derive(Clone)]
 pub struct Card {
     pub(crate) rank: Rank,
     pub(crate) suit: Suit,
-
-    // This is `Arc` so that the entire game is `Send + Sync`.
-    // A more performant alternative could be just immutable ref to the config,
-    // since it isn't meant to be mutated while a Card is alive.
-    // However it isn't nice to use since the lifetime ends up leaking everywhere.
-    #[serde(skip_serializing, skip_deserializing)]
     pub(crate) deck_config: Arc<DeckConfig>,
 }
 
 impl Card {
-    /// Gets the card's rank and suit.
-    pub fn data(&self) -> (Rank, Suit) {
-        (self.rank, self.suit)
+    /// Get the card's rank and suit.
+    pub fn data(&self) -> CardData {
+        CardData {
+            rank: self.rank,
+            suit: self.suit,
+        }
+    }
+
+    /// Get the card's `DeckConfig`.
+    pub fn deck_config(&self) -> Arc<DeckConfig> {
+        self.deck_config.clone()
     }
 
     /// Obtain the "value" of a `Card`.
@@ -65,26 +86,48 @@ impl Card {
         4 * relative_self_rank + self.suit as u8
     }
 
-    /// Whether or not `other` has the same suit and the consecutive (relative) rank. For eg:
+    /// Returns the card's value in context of scoring, that is:
+    /// - Ace: 1
+    /// - 2 - 10: Face value
+    /// - Jack/Queen/King: 10
+    pub fn score_value(&self) -> u8 {
+        match self.rank {
+            Rank::Jack | Rank::Queen | Rank::King => 10,
+            other => other as u8,
+        }
+    }
+
+    /// Whether or not `other` has the same suit and the consecutive (relative) rank.
+    ///
+    /// ## Examples
     /// - `high_rank = None`: (Two, Clubs) -> (Three, Clubs) = `true`
     /// - `high_rank = None`: (Two, Clubs) -> (Three, Spades) = `false`
     /// - `high_rank = Some(Two)`: (Two, Clubs) -> (Three, Clubs) = `false`
     ///
-    /// Mostly useful for validating runs.
+    /// Useful for validating runs.
     pub(crate) fn same_suit_consecutive_rank(&self, other: &Card) -> bool {
         self.value() + 4 == other.value()
     }
 
-    /// Returns whether the card is a `wildcard`, as determined by `deck_config`.
+    /// Returns whether the card is a wildcard, as determined by `deck_config`.
     pub(crate) fn is_wildcard(&self) -> bool {
         Some(self.rank) == self.deck_config.wildcard_rank
+    }
+
+    /// Create a `Card` from `CardData` and a deck config.
+    pub(crate) fn from_card_data(card_data: CardData, deck_config: Arc<DeckConfig>) -> Self {
+        Self {
+            deck_config,
+            rank: card_data.rank,
+            suit: card_data.suit,
+        }
     }
 }
 
 /// Equality impls
 impl PartialEq for Card {
     fn eq(&self, other: &Self) -> bool {
-        return self.rank == other.rank && self.suit == other.suit;
+        self.rank == other.rank && self.suit == other.suit
     }
 }
 
@@ -114,14 +157,14 @@ impl PartialOrd for Card {
 impl Debug for Card {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("")
-            .field("Card", &format!("{}", self))
+            .field("Card", &format!("{self}"))
             .finish()
     }
 }
 
 impl Display for Card {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?} of {:?}", self.rank, self.suit)
+        write!(f, "{}{}", self.rank.as_str(), self.suit.as_str())
     }
 }
 
@@ -130,5 +173,11 @@ impl Hash for Card {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         (self.rank as u8).hash(state);
         (self.suit as u8).hash(state);
+    }
+}
+
+impl Display for CardData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.rank.as_str(), self.suit.as_str())
     }
 }

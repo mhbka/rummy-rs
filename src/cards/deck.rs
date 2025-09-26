@@ -1,17 +1,38 @@
+//! Contains the `Deck`, consisting of a stock and discard pile.
+//!
+//! It can be initialized with a `DeckConfig`, which is passed within an `Arc` to its cards
+//! and controls things like custom high ranks/wildcards.
+
+use crate::cards::card::CardData;
 use std::sync::Arc;
+
 use super::card::Card;
 use super::suit_rank::{Rank, Suit};
 use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
-use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
-/// Configurable parameters for a deck:
-/// - `shuffle_seed`: Optional seed for shuffling; `0` results in no shuffle
-/// - `pack_count`: Number of card packs to include in the deck
-/// - `use_joker`: Whether to add Jokers and use them as wildcard (2 per pack)
-/// - `high_rank`: Whether to override the highest rank (default being King)
-/// - `wildcard_rank`: Whether to have a wildcard rank (can also be Joker)
-#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+/// Configurable values for a deck's behaviour.
+///
+/// ### `shuffle_seed`
+/// Optional seed for shuffling, where `0` results in no shuffle.
+/// The default is a completely randomized shuffle.
+///
+/// ### `pack_count`
+/// The number of card packs to include in the deck.
+///
+/// ### `high_rank`
+/// Optional rank to override the highest rank.
+/// If set, the rank right after it becomes the lowest rank.
+///
+/// For example, if this is `Five`, the lowest ranks would be `Six` -> `Seven` -> `Eight` ...
+///
+/// The default is King.
+///
+/// ### `wildcard_rank`
+/// Optional rank to denote as the wildcard (typically the Joker).
+/// The default is to have no wildcards.
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DeckConfig {
     pub shuffle_seed: Option<u64>,
     pub pack_count: usize,
@@ -33,16 +54,17 @@ impl DeckConfig {
     }
 }
 
-// TODO: verify cards belong to the deck before adding to discard pile
-
-/// The deck, consisting of the:
+/// The deck.
+///
+/// Consists of the:
+/// - **config**, dictating shuffling, pack counts, wildcards etc.
 /// - **stock**, face-down cards that can be drawn at the start of each turn
 /// - **discard pile**, discarded cards, which can also be drawn
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Deck {
-    config: Arc<DeckConfig>,
-    stock: Vec<Card>,
-    discard_pile: Vec<Card>,
+    pub(crate) config: Arc<DeckConfig>,
+    pub(crate) stock: Vec<Card>,
+    pub(crate) discard_pile: Vec<Card>,
 }
 
 impl Deck {
@@ -51,7 +73,7 @@ impl Deck {
     /// **Note**:
     /// - If `pack_count` < 1, it will be set to 1.
     /// - If `shuffle_seed` is `Some`, it will always be shuffled according to the seed.
-    /// - If `shuffle_seed` is `None`, it will never be shuffled.
+    /// - If `shuffle_seed` is `None`, it will not be shuffled.
     /// - If `wildcard_rank` is `Joker`, 2 jokers will be added per pack.
     pub fn new(mut config: DeckConfig) -> Self {
         config.pack_count = config.pack_count.max(1);
@@ -70,10 +92,7 @@ impl Deck {
         deck
     }
 
-    /// Reset the cards by creating a new deck and shuffling it.
-    ///
-    /// **NOTE**: This refers to the current `DeckConfig`; if it has changed,
-    /// the cards generated will be different from what was initially generated.
+    /// (Re)creates the deck and shuffling it.
     pub fn reset(&mut self) {
         self.stock.clear();
         self.discard_pile.clear();
@@ -86,36 +105,39 @@ impl Deck {
     /// If `amount` is greater than the stock size, `Err` is returned.
     ///
     /// To replenish the stock, one can call `shuffle_discarded` or `turnover_discarded`.
-    pub fn draw(&mut self, amount: usize) -> Result<Vec<Card>, String> {
+    pub fn try_draw(&mut self, amount: usize) -> Result<Vec<Card>, String> {
         if amount > self.stock.len() {
             return Err(format!(
                 "Draw amount ({amount}) greater than stock size ({})",
                 self.stock.len()
             ));
         }
-
         let cards = self.stock.split_off(self.stock.len() - amount);
         Ok(cards)
     }
 
-    /// Draw a specific card from the deck stock.
+    /// Draw `amount` cards from the deck stock;
+    /// automatically turns over from the discard pile if there wasn't enough cards.
     ///
-    /// If the card doesn't exist in the stock, return `Err`.
+    /// If `amount` is still greater than the stock size, `Err` is returned.
     ///
-    /// If the deck is empty after drawing, shuffle the discarded cards back into it.
-    pub fn draw_specific(&mut self, rank: Rank, suit: Suit) -> Result<Card, String> {
-        for i in 0..self.stock.len() {
-            let card = &self.stock[i];
-            if card.rank == rank && card.suit == suit {
-                return Ok(self.stock.remove(i));
-            }
+    /// ## Note
+    /// If this errors, it is probably a serious issue.
+    pub fn draw(&mut self, amount: usize) -> Result<Vec<Card>, String> {
+        if amount > self.stock.len() {
+            self.turnover_discarded();
         }
-
-        Err(format!("No card ({suit:?}, {rank:?}) in the stock"))
+        if amount > self.stock.len() {
+            return Err(format!(
+                "Draw amount ({amount}) greater than stock + discard pile size (technically shouldn't happen)"
+            ));
+        }
+        let cards = self.stock.split_off(self.stock.len() - amount);
+        Ok(cards)
     }
 
     /// See the top card of the discard pile, if there is one.
-    pub fn peek_discard_pile(&self) -> Option<(Rank, Suit)> {
+    pub fn peek_discard_pile(&self) -> Option<CardData> {
         self.discard_pile.last().map(|card| card.data())
     }
 
@@ -123,26 +145,28 @@ impl Deck {
     ///
     /// If the amount is greater than discard pile's size, or the discard pile is empty,
     /// return `Err`.
-    ///
-    /// If `None` amount is specified, attempt to draw the entire discard pile.
-    pub fn draw_discard_pile(&mut self, amount: Option<usize>) -> Result<Vec<Card>, String> {
+    pub fn draw_discard_pile(&mut self, amount: usize) -> Result<Vec<Card>, String> {
         let discard_size = self.discard_pile.len();
         if discard_size == 0 {
-            return Err(format!("Can't draw from empty discard pile"));
-        } else if let Some(a) = amount {
-            if a > discard_size {
+            Err("Can't draw from empty discard pile".to_string())
+        } else {
+            if amount > discard_size {
                 return Err(format!(
-                    "Draw amount ({a}) greater than discard pile size ({discard_size})"
+                    "Draw amount ({amount}) greater than discard pile size ({discard_size})"
                 ));
             }
-            return Ok(self.discard_pile.split_off(discard_size - a));
+            Ok(self.discard_pile.split_off(discard_size - amount))
         }
-        return Ok(self.discard_pile.split_off(0));
     }
 
     /// Drains `cards` into the discard pile.
-    pub fn add_to_discard_pile(&mut self, cards: &mut Vec<Card>) {
+    pub fn add_multiple_to_discard_pile(&mut self, cards: &mut Vec<Card>) {
         self.discard_pile.append(cards);
+    }
+
+    /// Add a single card onto the discard pile.
+    pub fn add_to_discard_pile(&mut self, card: Card) {
+        self.discard_pile.push(card);
     }
 
     /// Reset the stock by moving the discard pile into it and shuffling.

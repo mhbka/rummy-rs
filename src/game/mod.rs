@@ -1,5 +1,9 @@
-pub mod actions;
+//! Contains most of the actual game-related code.
+
+pub mod action;
 pub mod error;
-pub mod phases;
+pub mod rules;
+pub mod score;
 pub mod state;
+pub mod r#trait;
 pub mod variants;
